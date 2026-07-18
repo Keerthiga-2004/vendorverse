@@ -17,13 +17,18 @@ const getProducts = async (req, res) => {
 // ADD new product
 const addProduct = async (req, res) => {
   try {
-    const product = await Product.create(req.body);
+
+    const product = await Product.create({
+      ...req.body,
+      vendor: req.user.id,
+    });
 
     res.status(201).json({
       success: true,
       message: "Product Added Successfully",
       product,
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -58,12 +63,21 @@ const getProductById = async (req, res) => {
 // Update Product
 const updateProduct = async (req, res) => {
   try {
+
     let product = await Product.findById(req.params.id);
 
     if (!product) {
       return res.status(404).json({
         success: false,
         message: "Product Not Found",
+      });
+    }
+
+    // Check ownership
+    if (product.vendor.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not Authorized",
       });
     }
 
@@ -81,6 +95,7 @@ const updateProduct = async (req, res) => {
       message: "Product Updated Successfully",
       product,
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -88,10 +103,9 @@ const updateProduct = async (req, res) => {
     });
   }
 };
-
-// Delete Product
 const deleteProduct = async (req, res) => {
   try {
+
     const product = await Product.findById(req.params.id);
 
     if (!product) {
@@ -101,12 +115,21 @@ const deleteProduct = async (req, res) => {
       });
     }
 
+    // Check ownership
+    if (product.vendor.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not Authorized",
+      });
+    }
+
     await product.deleteOne();
 
     res.status(200).json({
       success: true,
       message: "Product Deleted Successfully",
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -114,7 +137,6 @@ const deleteProduct = async (req, res) => {
     });
   }
 };
-
 module.exports = {
   getProducts,
   addProduct,
