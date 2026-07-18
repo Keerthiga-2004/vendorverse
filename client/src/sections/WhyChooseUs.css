@@ -1,0 +1,98 @@
+/* src/components/sections/WhyChooseUs.css */
+
+.why-sec {
+  background: #fff;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 88px 0;
+}
+.why-header {
+  text-align: center;
+  margin-bottom: 52px;
+}
+.why-header p {
+  font-size: 16px;
+  color: var(--ink2);
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* ── BENTO GRID ─────────────────────────────────────────── */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.bento-c {
+  background: #fff;
+  border-radius: var(--rxl);
+  padding: 32px;
+  border: 1.5px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s;
+}
+.bento-c:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shm);
+}
+/* wide card spans 2 cols */
+.bento-c.sp2 { grid-column: span 2; }
+
+/* icon box */
+.bento-ic {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 18px;
+}
+/* decorative blob */
+.bento-blob {
+  position: absolute;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  right: -60px; bottom: -60px;
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+.bento-c h3 {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+.bento-c p {
+  font-size: 14px;
+  color: var(--ink2);
+  line-height: 1.65;
+}
+
+/* big number inside the wide card */
+.bento-big {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: -3px;
+  line-height: 1;
+  margin-top: 10px;
+}
+.bento-big span {
+  font-size: 24px;
+  color: var(--ink3);
+}
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .bento { grid-template-columns: 1fr 1fr; }
+  .bento-c.sp2 { grid-column: span 2; }
+}
+@media (max-width: 768px) {
+  .bento { grid-template-columns: 1fr; }
+  .bento-c.sp2 { grid-column: span 1; }
+  .why-sec { padding: 60px 0; }
+}

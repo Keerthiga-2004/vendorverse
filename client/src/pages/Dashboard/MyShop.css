@@ -1,0 +1,117 @@
+/* src/pages/Dashboard/MyShop.css */
+
+/* ── LAYOUT ─────────────────────────────────────────────── */
+.shop-wrap { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+.shop-main { background: var(--bg); padding: 80px 32px 60px; }
+
+/* ── HEADER ─────────────────────────────────────────────── */
+.shop-hd { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; gap: 16px; flex-wrap: wrap; }
+.shop-title { font-size: 28px; font-weight: 800; letter-spacing: -1px; color: var(--ink); }
+.shop-sub   { font-size: 14px; color: var(--ink2); margin-top: 4px; }
+
+/* ── COVER BANNER ───────────────────────────────────────── */
+.shop-cover {
+  height: 200px;
+  border-radius: var(--rxl);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 80px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 0;
+  background: linear-gradient(135deg, #FFF4EE, #FFF0F0);
+}
+.shop-cover-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(24,16,58,.55) 0%, transparent 60%);
+}
+
+/* ── PROFILE SECTION ────────────────────────────────────── */
+.shop-profile-card {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--rxl);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.shop-profile-inner { padding: 28px 32px; }
+
+.shop-logo-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  margin-top: -48px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+.shop-logo {
+  width: 88px; height: 88px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #7C3AED, #F72585);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 38px;
+  border: 4px solid #fff;
+  box-shadow: var(--shm);
+  flex-shrink: 0;
+}
+.shop-name-block .name { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--ink); }
+.shop-name-block .cat  { font-size: 13px; color: var(--ink3); margin-top: 2px; }
+
+/* ── INFO GRID ──────────────────────────────────────────── */
+.shop-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 24px;
+}
+.shop-info-item {}
+.shop-info-lbl  { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--ink3); margin-bottom: 5px; }
+.shop-info-val  { font-size: 14px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 7px; }
+
+.shop-desc-card { background: #fff; border: 1.5px solid var(--border); border-radius: var(--rxl); padding: 26px; margin-bottom: 20px; }
+.shop-desc-title { font-size: 16px; font-weight: 800; color: var(--ink); margin-bottom: 12px; }
+.shop-desc-text  { font-size: 14px; color: var(--ink2); line-height: 1.75; }
+
+/* ── STATUS BADGE ───────────────────────────────────────── */
+.shop-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 14px; border-radius: 100px;
+  font-size: 12px; font-weight: 700;
+}
+.shop-status.open   { background: var(--greenl); color: var(--green); }
+.shop-status.closed { background: var(--corall); color: var(--coral); }
+
+/* ── EDIT MODAL ─────────────────────────────────────────── */
+.sm-overlay {
+  position: fixed; inset: 0; background: rgba(24,16,58,.6); z-index: 900;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  backdrop-filter: blur(6px); animation: sm-in 0.2s ease;
+}
+@keyframes sm-in { from { opacity: 0; } to { opacity: 1; } }
+.sm-modal {
+  background: #fff; border-radius: var(--rxl); padding: 32px;
+  width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+  box-shadow: var(--shx); animation: sm-slide 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes sm-slide { from { transform: translateY(24px) scale(0.97); opacity: 0; } to { transform: none; opacity: 1; } }
+.sm-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.sm-title { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: var(--ink); }
+.sm-close { width: 34px; height: 34px; border-radius: 50%; border: none; background: var(--bg); cursor: pointer; font-size: 18px; color: var(--ink2); display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.sm-close:hover { background: var(--corall); color: var(--coral); }
+.sm-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.sm-field { margin-bottom: 16px; }
+.sm-label { display: block; font-size: 11px; font-weight: 800; color: var(--ink2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+.sm-input { width: 100%; padding: 11px 14px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--ink); outline: none; transition: all 0.2s; }
+.sm-input:focus { border-color: var(--v); box-shadow: 0 0 0 3px rgba(124,58,237,.1); background: #fff; }
+.sm-input::placeholder { color: var(--ink3); }
+textarea.sm-input { resize: vertical; min-height: 80px; }
+.sm-foot { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 1024px) { .shop-wrap { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+  .shop-main { padding: 100px 16px 48px; }
+  .shop-info-grid { grid-template-columns: 1fr; }
+  .sm-2col { grid-template-columns: 1fr; }
+  .shop-logo-row { flex-direction: column; align-items: flex-start; }
+}

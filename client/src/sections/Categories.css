@@ -1,0 +1,116 @@
+/* src/components/sections/Categories.css */
+
+/* ── SECTION WRAPPER ──────────────────────────────────── */
+.categories-sec {
+  padding: 56px 0 88px;
+}
+
+/* ── SECTION HEADER ROW ───────────────────────────────── */
+.sec-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 48px;
+}
+
+/* ── HORIZONTAL SCROLLING STRIP ───────────────────────── */
+.cat-strip {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.cat-strip::-webkit-scrollbar { display: none; }
+
+/* ── INDIVIDUAL TILE ──────────────────────────────────── */
+.cat-tile {
+  flex: 0 0 auto;
+  width: 128px;
+  scroll-snap-align: start;
+  background: #fff;
+  border-radius: 20px;
+  padding: 22px 14px;
+  text-align: center;
+  cursor: pointer;
+  border: 1.5px solid var(--border);
+  box-shadow: var(--sh);
+  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+/* pseudo-element colour overlay */
+.cat-tile::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.28s;
+  border-radius: 20px;
+}
+.cat-tile:hover {
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: var(--shx);
+  border-color: transparent;
+}
+.cat-tile:hover::before { opacity: 1; }
+
+/* emoji */
+.ct-em {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 10px;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.cat-tile:hover .ct-em {
+  transform: scale(1.25) rotate(-10deg);
+}
+
+/* label & count */
+.ct-n { font-size: 12px; font-weight: 700; color: var(--ink); }
+.ct-c { font-size: 10px; color: var(--ink3); margin-top: 3px; }
+
+/* ── PER-CATEGORY COLOUR VARIANTS ─────────────────────── */
+/* Food */
+.cf::before { background: linear-gradient(135deg, rgba(255,87,87,.1), rgba(255,171,0,.06)); }
+.cf:hover   { background: linear-gradient(135deg, #FFF0F0, #FFFCF0); }
+/* Grocery */
+.cg::before { background: linear-gradient(135deg, rgba(16,185,129,.1), rgba(0,201,177,.06)); }
+.cg:hover   { background: linear-gradient(135deg, #F0FDF9, #E6FAF8); }
+/* Tailoring */
+.ct::before { background: linear-gradient(135deg, rgba(124,58,237,.1), rgba(147,51,234,.06)); }
+.ct:hover   { background: linear-gradient(135deg, #F5F0FF, #EDE9FE); }
+/* Beauty */
+.cb::before { background: linear-gradient(135deg, rgba(247,37,133,.1), rgba(139,92,246,.06)); }
+.cb:hover   { background: linear-gradient(135deg, #FFF0F6, #F5F0FF); }
+/* Electronics */
+.ce::before { background: linear-gradient(135deg, rgba(255,171,0,.1), rgba(249,115,22,.06)); }
+.ce:hover   { background: linear-gradient(135deg, #FFF8E1, #FFF3E0); }
+/* Home Repair */
+.ch::before { background: linear-gradient(135deg, rgba(249,115,22,.1), rgba(239,68,68,.06)); }
+.ch:hover   { background: linear-gradient(135deg, #FFF3E0, #FFF0F0); }
+/* Electrician */
+.cel::before { background: linear-gradient(135deg, rgba(139,92,246,.1), rgba(124,58,237,.06)); }
+.cel:hover   { background: linear-gradient(135deg, #F5F3FF, #EDE9FE); }
+/* Bakery */
+.ck::before { background: linear-gradient(135deg, rgba(0,201,177,.1), rgba(16,185,129,.06)); }
+.ck:hover   { background: linear-gradient(135deg, #E6FAF8, #F0FDF9); }
+/* Local Services */
+.cl::before { background: linear-gradient(135deg, rgba(59,130,246,.1), rgba(124,58,237,.06)); }
+.cl:hover   { background: linear-gradient(135deg, #EFF6FF, #F5F0FF); }
+
+/* ── RESPONSIVE ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sec-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .cat-tile {
+    width: 110px;
+    padding: 18px 10px;
+  }
+}

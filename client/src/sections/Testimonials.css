@@ -1,0 +1,82 @@
+/* src/components/sections/Testimonials.css */
+
+.testi-sec {
+  background: #fff;
+  border-top: 1px solid var(--border);
+  padding: 88px 0;
+}
+.testi-header {
+  text-align: center;
+  margin-bottom: 52px;
+}
+
+/* ── 3-col grid ─────────────────────────────────────────── */
+.tgrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* ── individual card ────────────────────────────────────── */
+.tc {
+  background: #fff;
+  border-radius: var(--rxl);
+  padding: 30px;
+  border: 1.5px solid var(--border);
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.tc:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shm);
+}
+
+/* big quote mark */
+.tc-q {
+  font-size: 40px;
+  line-height: 1;
+  margin-bottom: 10px;
+  font-weight: 800;
+  /* gradient text applied inline */
+}
+.tc-stars {
+  font-size: 14px;
+  color: #F59E0B;
+  margin-bottom: 12px;
+  letter-spacing: -1px;
+}
+.tc-text {
+  font-size: 14px;
+  color: var(--ink2);
+  line-height: 1.75;
+  margin-bottom: 20px;
+  font-style: italic;
+}
+.tc-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tc-av {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+.tc-name { font-size: 14px; font-weight: 700; color: var(--ink); }
+.tc-role { font-size: 12px; color: var(--ink3); }
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .tgrid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .tgrid { grid-template-columns: 1fr; }
+  .testi-sec { padding: 60px 0; }
+}

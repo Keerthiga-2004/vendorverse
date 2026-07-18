@@ -1,0 +1,29 @@
+/* src/pages/Auth/Signup.css */
+@import './Login.css';
+
+/* ── ROLE SELECTOR TABS (exact from approved HTML) ─────── */
+.role-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--border);
+  border-radius: 14px;
+  padding: 4px;
+  margin-bottom: 24px;
+  gap: 4px;
+}
+.role-tab {
+  padding: 10px;
+  text-align: center;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--ink2);
+  transition: all 0.2s;
+  user-select: none;
+}
+.role-tab.on {
+  background: #fff;
+  color: var(--v);
+  box-shadow: var(--sh);
+}

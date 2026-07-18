@@ -1,0 +1,25 @@
+/* src/components/sections/FeaturedVendors.css */
+
+.featured-sec {
+  padding: 88px 0;
+}
+
+/* loading state */
+.fv-loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--ink3);
+}
+.fv-loading .spin-d {
+  display: block;
+  margin: 0 auto 14px;
+}
+
+@media (max-width: 1024px) {
+  .vgrid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .vgrid { grid-template-columns: 1fr; }
+  .featured-sec { padding: 56px 0; }
+}

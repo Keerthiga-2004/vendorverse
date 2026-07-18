@@ -1,0 +1,105 @@
+/* src/components/sections/CTA.css */
+
+.cta-sec { padding: 88px 0; }
+
+.cta-band {
+  background: linear-gradient(135deg, #7C3AED, #9333EA 40%, #F72585 100%);
+  border-radius: var(--rxl);
+  padding: 64px 56px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 32px;
+  position: relative;
+  overflow: hidden;
+}
+/* decorative circle */
+.cta-band::before {
+  content: '';
+  position: absolute;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.05);
+  right: -100px; top: -200px;
+  pointer-events: none;
+}
+
+.cta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: var(--amberl);
+  color: #B45309;
+  margin-bottom: 16px;
+}
+.cta-band h2 {
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -1.5px;
+  margin-bottom: 12px;
+  line-height: 1.15;
+}
+.cta-band p {
+  color: rgba(255,255,255,.8);
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 440px;
+}
+
+.cta-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 200px;
+  position: relative;
+  z-index: 1;
+}
+
+/* white button */
+.bwh {
+  background: #fff;
+  color: var(--v);
+  font-weight: 700;
+  box-shadow: 0 4px 20px rgba(0,0,0,.2);
+}
+.bwh:hover {
+  background: var(--bg);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,.25);
+}
+/* outline button */
+.bout {
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255,255,255,.4);
+  font-weight: 600;
+}
+.bout:hover {
+  background: rgba(255,255,255,.1);
+  border-color: rgba(255,255,255,.7);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 900px) {
+  .cta-band {
+    grid-template-columns: 1fr;
+    padding: 48px 36px;
+  }
+  .cta-btns {
+    flex-direction: row;
+    min-width: unset;
+  }
+  .cta-btns .btn { flex: 1; }
+}
+@media (max-width: 560px) {
+  .cta-band { padding: 36px 24px; }
+  .cta-band h2 { font-size: 26px; }
+  .cta-btns { flex-direction: column; }
+}
