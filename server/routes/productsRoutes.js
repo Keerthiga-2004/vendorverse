@@ -1,5 +1,6 @@
 const express = require("express");
 const protect = require("../middleware/authMiddleware");
+const upload = require("../middleware/uploadMiddleware");
 const router = express.Router();
 
 const {
@@ -12,7 +13,7 @@ const {
 
 router.route("/")
   .get(getProducts)
-  .post(protect, addProduct);
+   .post(protect, upload.single("image"), addProduct);
 
 router.route("/:id")
   .get(getProductById)

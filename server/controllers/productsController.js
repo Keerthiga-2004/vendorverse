@@ -13,13 +13,27 @@ const getProducts = async (req, res) => {
     });
   }
 };
-
 // ADD new product
 const addProduct = async (req, res) => {
   try {
 
+    const {
+      name,
+      description,
+      price,
+      category,
+      stock,
+    } = req.body;
+
     const product = await Product.create({
-      ...req.body,
+      name,
+      description,
+      price,
+      category,
+      stock,
+
+      image: req.file ? req.file.path : "",
+
       vendor: req.user.id,
     });
 
