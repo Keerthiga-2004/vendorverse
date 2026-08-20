@@ -3,65 +3,87 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import VendorCard from '../../components/ui/VendorCard'
-import { VENDORS, EXPLORE_CATEGORIES } from '../../utils/vendorData'
+import { EXPLORE_CATEGORIES } from '../../utils/vendorData'
+import api from '../../services/api'
 import './Explore.css'
 
 const gridVariants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.07 } }
+  visible: { transition: { staggerChildren: 0.07 } },
 }
 const cardVariants = {
   hidden:  { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
 }
 
 export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [search, setSearch] = useState(searchParams.get('q') || '')
+  const [search,   setSearch]   = useState(searchParams.get('q')   || '')
   const [category, setCategory] = useState(searchParams.get('cat') || '')
-  const [sort, setSort] = useState('newest')
+  const [sort,     setSort]     = useState('newest')
+  const [vendors,  setVendors]  = useState([])
+
   const debounceRef = useRef(null)
 
-  // keep URL in sync (so links from Hero/Categories pages work)
+  // ── Fetch all vendors from API ──────────────────────────
+  useEffect(() => {
+    fetchVendors()
+  }, [])
+
+  const fetchVendors = async () => {
+    try {
+      const res = await api.get('/users/vendors')
+      setVendors(res.data)
+    } catch (err) {
+      console.error('Failed to fetch vendors:', err)
+    }
+  }
+
+  // ── Keep URL in sync ────────────────────────────────────
   useEffect(() => {
     const params = {}
-    if (search) params.q = search
+    if (search)   params.q   = search
     if (category) params.cat = category
     setSearchParams(params, { replace: true })
   }, [search, category]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // re-sync local state if user navigates here again with new query params
+  // ── Re-sync from URL when navigating here with params ──
   useEffect(() => {
-    setSearch(searchParams.get('q') || '')
+    setSearch(searchParams.get('q')   || '')
     setCategory(searchParams.get('cat') || '')
   }, [searchParams])
 
+  // ── Debounced search input ──────────────────────────────
   const handleSearchInput = (e) => {
     const val = e.target.value
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => setSearch(val), 250)
   }
 
+  // ── Filter + sort ───────────────────────────────────────
   const filtered = useMemo(() => {
-    let list = [...VENDORS]
+    let list = [...vendors]
 
     if (category) {
       list = list.filter(v => v.category === category)
     }
+
     if (search.trim()) {
-      const q = search.trim().toLowerCase()
+      const q = search.toLowerCase()
       list = list.filter(v =>
-        v.shopName.toLowerCase().includes(q) ||
-        v.category.toLowerCase().includes(q) ||
-        v.city.toLowerCase().includes(q)
+        v.shopName?.toLowerCase().includes(q) ||
+        v.category?.toLowerCase().includes(q) ||
+        v.city?.toLowerCase().includes(q)
       )
     }
+
     if (sort === 'rating') {
       list.sort((a, b) => (b.rating || 0) - (a.rating || 0))
     }
+
     return list
-  }, [search, category, sort])
+  }, [vendors, search, category, sort])
 
   return (
     <div className="page-explore">
@@ -131,7 +153,7 @@ export default function Explore() {
       <div className="wrap">
         <div className="ex-body">
 
-          {/* sidebar */}
+          {/* ── Sidebar ── */}
           <div className="fp">
             <div className="fp-sec">
               <div className="fp-title">Categories</div>
@@ -151,6 +173,7 @@ export default function Explore() {
                 </div>
               ))}
             </div>
+
             <div className="fp-sec">
               <div className="fp-title">Sort</div>
               <div
@@ -168,10 +191,10 @@ export default function Explore() {
             </div>
           </div>
 
-          {/* results */}
+          {/* ── Results grid ── */}
           <div>
             <div className="ex-count">
-              {filtered.length
+              {filtered.length > 0
                 ? `Showing ${filtered.length} vendor${filtered.length !== 1 ? 's' : ''}`
                 : ''}
             </div>
@@ -185,8 +208,8 @@ export default function Explore() {
                   initial="hidden"
                   animate="visible"
                 >
-                  {filtered.map(v => (
-                    <motion.div key={v._id} variants={cardVariants}>
+                  {filtered.map((v, index) => (
+                    <motion.div key={v._id || index} variants={cardVariants}>
                       <VendorCard vendor={v} />
                     </motion.div>
                   ))}

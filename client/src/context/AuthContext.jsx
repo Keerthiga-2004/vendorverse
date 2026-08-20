@@ -47,10 +47,10 @@ export function AuthProvider({ children }) {
     setLoading(true);
 
     try {
-      const { data } = await api.post("/users/login", {
-        email,
-        password,
-      });
+      const { data } = await api.post("/auth/login", {
+  email,
+  password,
+});
 
       save(data.user, data.token);
 
@@ -70,12 +70,12 @@ export function AuthProvider({ children }) {
     setLoading(true);
 
     try {
-      const { data } = await api.post("/users/register", {
-        name,
-        email,
-        password,
-        role,
-      });
+     const { data } = await api.post("/auth/register", {
+  name,
+  email,
+  password,
+  role,
+});
 
       save(data.user, data.token);
 

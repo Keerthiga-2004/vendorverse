@@ -4,24 +4,21 @@ const connectDB = require("./config/db");
 const cors = require("cors");
 
 const app = express();
+
 app.use(cors());
+app.use(express.json());
 
 connectDB();
 
-
-
-// Middleware
-app.use(express.json());
-
-// Import Routes
+// Routes
 const productsRoutes = require("./routes/productsRoutes");
 const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
 
-// Use Routes
 app.use("/api/products", productsRoutes);
-app.use("/api/users", authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
-// Home Route
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -30,7 +27,6 @@ app.get("/", (req, res) => {
   });
 });
 
-// Port
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

@@ -26,11 +26,15 @@ const productSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    unit: {
+  type: String,
+  default: "per item",
+},
 
-    stock: {
-      type: Number,
-      default: 0,
-    },
+available: {
+  type: Boolean,
+  default: true,
+},
 
     // NEW
     vendor: {
