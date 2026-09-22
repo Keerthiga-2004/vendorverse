@@ -1,11 +1,12 @@
 // src/pages/Dashboard/Analytics.jsx
-import { useState, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
+import api from '../../services/api'
 import './Analytics.css'
 
-// ─── SIDEBAR ─────────────────────────────────────────────
+// ─── SIDEBAR (unchanged) ──────────────────────────────────
 function SidebarLogo() {
   return (
     <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
@@ -41,6 +42,12 @@ function Sidebar() {
         <button className="sb-a" onClick={() => navigate('/dashboard/products')}><span className="sb-ic">📦</span>Products</button>
         <button className="sb-a" onClick={() => navigate('/dashboard/shop')}><span className="sb-ic">🏪</span>My Shop</button>
         <button className="sb-a" onClick={() => navigate('/dashboard/reviews')}><span className="sb-ic">⭐</span>Reviews</button>
+        <button
+  className="sb-a"
+  onClick={() => navigate('/dashboard/analytics')}
+>
+  <span className="sb-ic">📈</span>Analytics
+</button>
       </div>
       <div className="sb-sec" style={{ marginTop: 8 }}>
         <span className="sb-lbl">Other</span>
@@ -51,85 +58,54 @@ function Sidebar() {
   )
 }
 
-// ─── MOCK DATA ────────────────────────────────────────────
-const MONTHLY = {
-  '7d': {
-    labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-    revenue: [1200, 1800, 1400, 2200, 1900, 2800, 2400],
-    orders:  [8, 12, 9, 15, 13, 19, 16],
-  },
-  '30d': {
-    labels: ['W1','W2','W3','W4'],
-    revenue: [14200, 18600, 16800, 22400],
-    orders:  [94, 124, 112, 149],
-  },
-  '90d': {
-    labels: ['Jan','Feb','Mar'],
-    revenue: [48000, 54000, 72000],
-    orders:  [320, 360, 479],
-  },
-}
-
-const KPIS = {
-  '7d':  { revenue: '₹13,700', orders: 92,    customers: 68,  sold: 184,  revTrend: '+12%', ordTrend: '+8%',  custTrend: '+15%', soldTrend: '+10%'  },
-  '30d': { revenue: '₹72,000', orders: 479,   customers: 312, sold: 958,  revTrend: '+18%', ordTrend: '+14%', custTrend: '+22%', soldTrend: '+16%'  },
-  '90d': { revenue: '₹1,74,000',orders:1159,  customers: 784, sold: 2318, revTrend: '+24%', ordTrend: '+19%', custTrend: '+28%', soldTrend: '+21%'  },
-}
-
-const TOP_PRODUCTS = [
-  { _id:'tp1', name:'Masala Dosa',      emoji:'🥞', category:'Food',     sold:312, revenue: 18720 },
-  { _id:'tp2', name:'Thali Meals',      emoji:'🍱', category:'Food',     sold:198, revenue: 23760 },
-  { _id:'tp3', name:'Filter Coffee',    emoji:'☕', category:'Beverage', sold:184, revenue:  4600 },
-  { _id:'tp4', name:'Idli Sambar',      emoji:'🍚', category:'Food',     sold:142, revenue:  7100 },
-  { _id:'tp5', name:'Veg Puff',         emoji:'🥟', category:'Snacks',   sold:97,  revenue:  2910 },
-]
-
-const REV_SUMMARY = [
-  { month: 'December 2024', revenue: '₹24,200', orders: 161, growth: '+18%', up: true  },
-  { month: 'November 2024', revenue: '₹20,500', orders: 137, growth: '+11%', up: true  },
-  { month: 'October 2024',  revenue: '₹18,400', orders: 123, growth: '-3%',  up: false },
-  { month: 'September 2024',revenue: '₹19,000', orders: 127, growth: '+7%',  up: true  },
-  { month: 'August 2024',   revenue: '₹17,700', orders: 118, growth: '+5%',  up: true  },
-]
-
-const ORD_SUMMARY = [
-  { week: 'Dec 23 – Dec 29', orders: 49, avgValue: '₹150', status: '92% fulfilled' },
-  { week: 'Dec 16 – Dec 22', orders: 42, avgValue: '₹144', status: '96% fulfilled' },
-  { week: 'Dec 9 – Dec 15',  orders: 38, avgValue: '₹138', status: '89% fulfilled' },
-  { week: 'Dec 2 – Dec 8',   orders: 32, avgValue: '₹160', status: '94% fulfilled' },
-]
-
-// ─── HELPERS ─────────────────────────────────────────────
+// ─── ANIMATION ────────────────────────────────────────────
 const fadeUp = {
   hidden:  { opacity: 0, y: 18 },
   visible: (i = 0) => ({
     opacity: 1, y: 0,
-    transition: { duration: 0.42, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] }
-  })
+    transition: { duration: 0.42, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] },
+  }),
 }
 
-function pct(val, max) { return max ? Math.round((val / max) * 100) : 0 }
-
-// ─── BAR CHART ───────────────────────────────────────────
-function BarChart({ data, labels, color = 'primary' }) {
-  const max = Math.max(...data)
+// ─── BAR CHART (CSS-drawn, no external library) ──────────
+function BarChart({ data, labelKey, valueKey, color = '#7C3AED', altColor = null }) {
+  const max = Math.max(...data.map(d => d[valueKey]), 1)
   return (
-    <div className="bar-chart">
-      {data.map((val, i) => {
-        const h = max ? (val / max) * 100 : 0
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 140, paddingTop: 12 }}>
+      {data.map((item, i) => {
+        const heightPct = max > 0 ? (item[valueKey] / max) * 100 : 0
+        const bg = altColor && i % 2 === 0 ? altColor : color
         return (
-          <div key={i} className="bar-group">
-            <div className="bar-col-wrap">
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, gap: 6, height: '100%' }}>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', width: '100%' }}>
               <div
-                className={`bar-col${color === 'alt' ? ' alt' : ''}`}
-                style={{ height: `${h}%` }}
+                title={`${item[labelKey]}: ${item[valueKey]}`}
+                style={{
+                  width: '100%',
+                  height: `${heightPct}%`,
+                  minHeight: item[valueKey] > 0 ? 4 : 0,
+                  background: bg,
+                  borderRadius: '6px 6px 0 0',
+                  transition: 'height 0.6s cubic-bezier(0.34,1.56,0.64,1)',
+                  cursor: 'default',
+                  position: 'relative',
+                }}
               >
-                <div className="bar-col-tooltip">
-                  {typeof val === 'number' && val > 999 ? `₹${(val/1000).toFixed(1)}k` : val}
-                </div>
+                {item[valueKey] > 0 && (
+                  <div style={{
+                    position: 'absolute', bottom: 'calc(100% + 4px)',
+                    left: '50%', transform: 'translateX(-50%)',
+                    fontSize: 10, fontWeight: 700, color: 'var(--ink)',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {item[valueKey]}
+                  </div>
+                )}
               </div>
             </div>
-            <div className="bar-label">{labels[i]}</div>
+            <div style={{ fontSize: 10, color: 'var(--ink3)', fontWeight: 600, textAlign: 'center' }}>
+              {item[labelKey]}
+            </div>
           </div>
         )
       })}
@@ -137,253 +113,368 @@ function BarChart({ data, labels, color = 'primary' }) {
   )
 }
 
-// ─── LINE CHART (SVG sparkline) ───────────────────────────
-function LineChart({ data, color = '#7C3AED' }) {
-  const W = 400; const H = 140; const PAD = 16
-  const max = Math.max(...data)
-  const min = Math.min(...data)
-  const range = max - min || 1
-
-  const points = data.map((v, i) => ({
-    x: PAD + (i / (data.length - 1)) * (W - PAD * 2),
-    y: PAD + ((max - v) / range) * (H - PAD * 2),
-  }))
-
-  const pathD = points.reduce((acc, p, i) => {
-    if (i === 0) return `M ${p.x} ${p.y}`
-    const prev = points[i - 1]
-    const cx = (prev.x + p.x) / 2
-    return `${acc} C ${cx} ${prev.y} ${cx} ${p.y} ${p.x} ${p.y}`
-  }, '')
-
-  const fillD = `${pathD} L ${points[points.length-1].x} ${H} L ${points[0].x} ${H} Z`
-
+// ─── STAR DISPLAY ─────────────────────────────────────────
+function Stars({ rating }) {
   return (
-    <div className="line-chart-wrap">
-      <svg className="line-chart-svg" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="lc-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stopColor={color} stopOpacity="0.18" />
-            <stop offset="100%" stopColor={color} stopOpacity="0.01" />
-          </linearGradient>
-        </defs>
-        <path d={fillD} fill="url(#lc-grad)" />
-        <path d={pathD} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        {points.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r="4" fill={color} stroke="#fff" strokeWidth="2" />
-        ))}
-      </svg>
-    </div>
+    <span style={{ color: '#F59E0B', letterSpacing: -1 }}>
+      {'★'.repeat(Math.round(rating || 0))}
+      {'☆'.repeat(5 - Math.round(rating || 0))}
+    </span>
   )
 }
 
 // ─── MAIN COMPONENT ───────────────────────────────────────
 export default function Analytics() {
-  const [period, setPeriod] = useState('30d')
-  const data = MONTHLY[period]
-  const kpi  = KPIS[period]
-  const maxSold = TOP_PRODUCTS[0]?.sold || 1
+  const navigate = useNavigate()
 
+  // ✅ CHANGED: real data state
+  const [data,    setData]    = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error,   setError]   = useState(null)
+
+  // ✅ ADDED: fetch real analytics from API
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const res = await api.get('/products/analytics')
+        setData(res.data.data)
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to load analytics')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchAnalytics()
+  }, [])
+
+  // ─── Loading state ────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="an-wrap">
+        <Sidebar />
+        <main className="an-main">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 400, flexDirection: 'column', gap: 16 }}>
+            <div style={{ width: 36, height: 36, border: '3px solid var(--border)', borderTopColor: 'var(--v)', borderRadius: '50%', animation: 'spin .7s linear infinite' }} />
+            <span style={{ fontSize: 14, color: 'var(--ink3)' }}>Loading analytics…</span>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  // ─── Error state ──────────────────────────────────────
+  if (error) {
+    return (
+      <div className="an-wrap">
+        <Sidebar />
+        <main className="an-main">
+          <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)', marginBottom: 8 }}>{error}</div>
+            <button className="btn bp bsm" onClick={() => window.location.reload()}>Try again</button>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  // ─── Shorthand refs to real data ─────────────────────
+  const P = data.products   // product analytics
+  const R = data.reviews    // review analytics
+
+  // ─── RENDER ───────────────────────────────────────────
   return (
     <div className="an-wrap">
       <Sidebar />
 
       <main className="an-main">
 
-        {/* ── Header ── */}
+        {/* HEADER */}
         <motion.div className="an-hd" variants={fadeUp} initial="hidden" animate="visible" custom={0}>
           <div>
             <div className="an-title">Analytics</div>
-            <div className="an-sub">Track your shop's performance and growth</div>
-          </div>
-          <div className="an-period">
-            {[['7d','7 days'],['30d','30 days'],['90d','90 days']].map(([val, lbl]) => (
-              <button
-                key={val}
-                className={`an-period-btn${period === val ? ' on' : ''}`}
-                onClick={() => setPeriod(val)}
-              >
-                {lbl}
-              </button>
-            ))}
+            <div className="an-sub">Real data from your shop</div>
           </div>
         </motion.div>
 
-        {/* ── KPI Cards ── */}
+        {/* ── KPI CARDS (real data) ── */}
         <motion.div className="an-kpi-row" variants={fadeUp} initial="hidden" animate="visible" custom={1}>
+
           <div className="an-kpi">
             <div className="an-kpi-blob" style={{ background: '#7C3AED' }} />
-            <div className="an-kpi-ic" style={{ background: 'var(--vl)' }}>💰</div>
-            <div className="an-kpi-lbl">Revenue</div>
-            <div className="an-kpi-n">{kpi.revenue}</div>
-            <div className="an-kpi-tr up">↑ {kpi.revTrend} vs last period</div>
+            <div className="an-kpi-ic" style={{ background: 'var(--vl)' }}>📦</div>
+            <div className="an-kpi-lbl">Total Products</div>
+            <div className="an-kpi-n">{P.total}</div>
+            <div className="an-kpi-tr up">{P.available} available</div>
           </div>
+
           <div className="an-kpi">
             <div className="an-kpi-blob" style={{ background: 'var(--green)' }} />
-            <div className="an-kpi-ic" style={{ background: 'var(--greenl)' }}>🛍️</div>
-            <div className="an-kpi-lbl">Orders</div>
-            <div className="an-kpi-n">{kpi.orders}</div>
-            <div className="an-kpi-tr up">↑ {kpi.ordTrend} vs last period</div>
+            <div className="an-kpi-ic" style={{ background: 'var(--greenl)' }}>✅</div>
+            <div className="an-kpi-lbl">Available</div>
+            <div className="an-kpi-n">{P.available}</div>
+            <div className="an-kpi-tr up">
+              {P.total > 0 ? Math.round((P.available / P.total) * 100) : 0}% of products
+            </div>
           </div>
-          <div className="an-kpi">
-            <div className="an-kpi-blob" style={{ background: 'var(--teal)' }} />
-            <div className="an-kpi-ic" style={{ background: 'var(--teall)' }}>👥</div>
-            <div className="an-kpi-lbl">Customers</div>
-            <div className="an-kpi-n">{kpi.customers}</div>
-            <div className="an-kpi-tr up">↑ {kpi.custTrend} vs last period</div>
-          </div>
+
           <div className="an-kpi">
             <div className="an-kpi-blob" style={{ background: 'var(--amber)' }} />
-            <div className="an-kpi-ic" style={{ background: 'var(--amberl)' }}>📦</div>
-            <div className="an-kpi-lbl">Products Sold</div>
-            <div className="an-kpi-n">{kpi.sold}</div>
-            <div className="an-kpi-tr up">↑ {kpi.soldTrend} vs last period</div>
+            <div className="an-kpi-ic" style={{ background: 'var(--amberl)' }}>⭐</div>
+            <div className="an-kpi-lbl">Avg Rating</div>
+            <div className="an-kpi-n">{R.averageRating > 0 ? R.averageRating : '—'}</div>
+            <div className="an-kpi-tr up">{R.total} reviews total</div>
           </div>
+
+          <div className="an-kpi">
+            <div className="an-kpi-blob" style={{ background: 'var(--pink)' }} />
+            <div className="an-kpi-ic" style={{ background: 'var(--pinkl)' }}>💬</div>
+            <div className="an-kpi-lbl">Total Reviews</div>
+            <div className="an-kpi-n">{R.total}</div>
+            <div className="an-kpi-tr up">
+              {R.total > 0
+                ? `${R.breakdown.find(b => b.star === 5)?.count || 0} five-star`
+                : 'No reviews yet'}
+            </div>
+          </div>
+
         </motion.div>
 
-        {/* ── Charts Row ── */}
+        {/* ── CHARTS ROW ── */}
         <motion.div className="an-chart-row" variants={fadeUp} initial="hidden" animate="visible" custom={2}>
 
-          {/* Monthly Revenue Chart */}
+          {/* Reviews per month */}
           <div className="an-card" style={{ margin: 0 }}>
             <div className="an-card-hd">
               <div>
-                <div className="an-card-title">Revenue</div>
-                <div className="an-card-sub">₹ over selected period</div>
+                <div className="an-card-title">Reviews over time</div>
+                <div className="an-card-sub">Last 6 months</div>
               </div>
             </div>
-            <BarChart data={data.revenue} labels={data.labels} color="primary" />
-            <div className="chart-legend">
-              <div className="legend-item">
-                <div className="legend-dot" style={{ background: 'linear-gradient(135deg,#7C3AED,#9333EA)' }} />
-                Revenue (₹)
+            {R.byMonth.every(m => m.count === 0) ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--ink3)', fontSize: 13 }}>
+                No reviews yet
               </div>
-            </div>
+            ) : (
+              <BarChart
+                data={R.byMonth}
+                labelKey="month"
+                valueKey="count"
+                color="linear-gradient(180deg, #7C3AED, #9333EA)"
+              />
+            )}
           </div>
 
-          {/* Monthly Orders Chart */}
+          {/* Products added per month */}
           <div className="an-card" style={{ margin: 0 }}>
             <div className="an-card-hd">
               <div>
-                <div className="an-card-title">Orders</div>
-                <div className="an-card-sub">Total orders over selected period</div>
+                <div className="an-card-title">Products added over time</div>
+                <div className="an-card-sub">Last 6 months</div>
               </div>
             </div>
-            <BarChart data={data.orders} labels={data.labels} color="alt" />
-            <div className="chart-legend">
-              <div className="legend-item">
-                <div className="legend-dot" style={{ background: 'linear-gradient(135deg,#10B981,#00C9B1)' }} />
-                Orders
+            {P.byMonth.every(m => m.count === 0) ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--ink3)', fontSize: 13 }}>
+                No products added yet
               </div>
-            </div>
+            ) : (
+              <BarChart
+                data={P.byMonth}
+                labelKey="month"
+                valueKey="count"
+                color="linear-gradient(180deg, #10B981, #00C9B1)"
+              />
+            )}
           </div>
+
         </motion.div>
 
-        {/* ── Revenue Trend Line Chart ── */}
-        <motion.div className="an-card" variants={fadeUp} initial="hidden" animate="visible" custom={3}>
-          <div className="an-card-hd">
-            <div>
-              <div className="an-card-title">Revenue trend</div>
-              <div className="an-card-sub">Cumulative revenue curve</div>
-            </div>
-          </div>
-          <LineChart data={data.revenue} color="#7C3AED" />
-          <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, color:'var(--ink3)', marginTop:6 }}>
-            {data.labels.map(l => <span key={l}>{l}</span>)}
-          </div>
-        </motion.div>
+        {/* ── BOTTOM ROW ── */}
+        <motion.div className="an-chart-row" variants={fadeUp} initial="hidden" animate="visible" custom={3}>
 
-        {/* ── Top Products + Revenue Summary (two col) ── */}
-        <motion.div className="an-chart-row" variants={fadeUp} initial="hidden" animate="visible" custom={4}>
-
-          {/* Top Selling Products */}
+          {/* Products by category */}
           <div className="an-card" style={{ margin: 0 }}>
             <div className="an-card-hd">
-              <div className="an-card-title">Top selling products</div>
+              <div className="an-card-title">Products by category</div>
             </div>
-            {TOP_PRODUCTS.map((p, i) => {
-              const rankCls = i === 0 ? 'r1' : i === 1 ? 'r2' : i === 2 ? 'r3' : 'rn'
-              return (
-                <div key={p._id} className="top-prod-row">
-                  <div className={`top-prod-rank ${rankCls}`}>#{i+1}</div>
-                  <div className="top-prod-em">{p.emoji}</div>
-                  <div className="top-prod-info">
-                    <div className="top-prod-name">{p.name}</div>
-                    <div className="top-prod-bar">
-                      <div className="top-prod-bar-fill" style={{ width: `${pct(p.sold, maxSold)}%` }} />
+            {P.byCategory.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--ink3)', fontSize: 13 }}>
+                No products yet
+              </div>
+            ) : (
+              <div>
+                {P.byCategory.map((item, i) => (
+                  <div key={item.category} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 0', borderBottom: i < P.byCategory.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                    <div style={{
+                      width: 28, height: 28, borderRadius: 8,
+                      background: i === 0 ? 'var(--amberl)' : i === 1 ? 'var(--vl)' : 'var(--greenl)',
+                      color:      i === 0 ? '#B45309' : i === 1 ? 'var(--v)' : 'var(--green)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 12, fontWeight: 800, flexShrink: 0,
+                    }}>
+                      #{i + 1}
                     </div>
-                    <div className="top-prod-cat">{p.category}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', marginBottom: 4 }}>{item.category}</div>
+                      <div style={{ height: 5, background: 'var(--bg)', borderRadius: 99, overflow: 'hidden' }}>
+                        <div style={{
+                          height: '100%',
+                          width: `${Math.round((item.count / P.total) * 100)}%`,
+                          background: 'linear-gradient(90deg, #7C3AED, #F72585)',
+                          borderRadius: 99,
+                        }} />
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--v)', flexShrink: 0 }}>
+                      {item.count}
+                    </div>
                   </div>
-                  <div style={{ textAlign:'right' }}>
-                    <div className="top-prod-num">₹{p.revenue.toLocaleString()}</div>
-                    <div className="top-prod-sold">{p.sold} sold</div>
-                  </div>
-                </div>
-              )
-            })}
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Orders Summary */}
+          {/* Rating breakdown */}
           <div className="an-card" style={{ margin: 0 }}>
             <div className="an-card-hd">
-              <div className="an-card-title">Orders summary</div>
+              <div className="an-card-title">Rating breakdown</div>
+            </div>
+            {R.total === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--ink3)', fontSize: 13 }}>
+                No reviews yet
+              </div>
+            ) : (
+              <div>
+                {/* Summary */}
+                <div style={{ textAlign: 'center', marginBottom: 20, padding: '16px', background: 'linear-gradient(135deg, var(--vl), #FFF0F6)', borderRadius: 14 }}>
+                  <div style={{ fontSize: 44, fontWeight: 800, letterSpacing: -2, background: 'linear-gradient(135deg, #7C3AED, #F72585)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', lineHeight: 1 }}>
+                    {R.averageRating}
+                  </div>
+                  <div style={{ fontSize: 18, color: '#F59E0B', margin: '6px 0 4px' }}>
+                    {'★'.repeat(Math.round(R.averageRating))}{'☆'.repeat(5 - Math.round(R.averageRating))}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--ink3)' }}>{R.total} reviews</div>
+                </div>
+
+                {/* Per-star bars */}
+                {R.breakdown.map(({ star, count }) => (
+                  <div key={star} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink2)', width: 14, textAlign: 'right', flexShrink: 0 }}>{star}</div>
+                    <div style={{ fontSize: 12, color: '#F59E0B', flexShrink: 0 }}>★</div>
+                    <div style={{ flex: 1, height: 8, background: 'var(--bg)', borderRadius: 99, overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%',
+                        width: R.total > 0 ? `${Math.round((count / R.total) * 100)}%` : '0%',
+                        background: 'linear-gradient(90deg, #7C3AED, #F72585)',
+                        borderRadius: 99,
+                        transition: 'width 0.6s ease',
+                      }} />
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--ink3)', fontWeight: 600, width: 20, textAlign: 'right', flexShrink: 0 }}>{count}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+        </motion.div>
+
+        {/* ── TOP PRODUCTS BY PRICE ── */}
+        {P.topByPrice.length > 0 && (
+          <motion.div className="an-card" variants={fadeUp} initial="hidden" animate="visible" custom={4}>
+            <div className="an-card-hd">
+              <div className="an-card-title">Top products by price</div>
             </div>
             <table className="summary-table">
               <thead>
                 <tr>
-                  <th>Week</th>
-                  <th>Orders</th>
-                  <th>Avg value</th>
+                  <th>Rank</th>
+                  <th>Product</th>
+                  <th>Category</th>
+                  <th>Price</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
-                {ORD_SUMMARY.map((row, i) => (
-                  <tr key={i}>
-                    <td className="td-name" style={{ fontSize:12 }}>{row.week}</td>
-                    <td className="td-num">{row.orders}</td>
-                    <td className="td-rev">{row.avgValue}</td>
-                    <td><span className="badge bg2" style={{ fontSize:10 }}>{row.status}</span></td>
+                {P.topByPrice.map((p, i) => (
+                  <tr key={p._id}>
+                    <td>
+                      <span style={{
+                        width: 24, height: 24, borderRadius: 7, display: 'inline-flex',
+                        alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800,
+                        background: i === 0 ? 'var(--amberl)' : i === 1 ? 'var(--vl)' : 'var(--greenl)',
+                        color:      i === 0 ? '#B45309' : i === 1 ? 'var(--v)' : 'var(--green)',
+                      }}>
+                        #{i + 1}
+                      </span>
+                    </td>
+                    <td className="td-name">{p.name}</td>
+                    <td style={{ color: 'var(--ink2)', fontSize: 13 }}>{p.category}</td>
+                    <td className="td-rev">₹{p.price}</td>
+                    <td className="td-badge">
+                      <span className={`badge ${p.available ? 'bg2' : 'bc2'}`} style={{ fontSize: 10 }}>
+                        {p.available ? 'Available' : 'Unavailable'}
+                      </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
-        {/* ── Revenue Summary Table ── */}
-        <motion.div className="an-card" variants={fadeUp} initial="hidden" animate="visible" custom={5}>
-          <div className="an-card-hd">
-            <div className="an-card-title">Monthly revenue summary</div>
-          </div>
-          <table className="summary-table">
-            <thead>
-              <tr>
-                <th>Month</th>
-                <th>Revenue</th>
-                <th>Orders</th>
-                <th>Growth</th>
-              </tr>
-            </thead>
-            <tbody>
-              {REV_SUMMARY.map((row, i) => (
-                <tr key={i}>
-                  <td className="td-name">{row.month}</td>
-                  <td className="td-rev">{row.revenue}</td>
-                  <td className="td-num">{row.orders}</td>
-                  <td>
-                    <span
-                      className={`badge ${row.up ? 'bg2' : 'bc2'}`}
-                      style={{ fontSize: 10 }}
-                    >
-                      {row.up ? '↑' : '↓'} {row.growth}
-                    </span>
-                  </td>
+        {/* ── RECENT REVIEWS ── */}
+        {R.recent.length > 0 && (
+          <motion.div className="an-card" variants={fadeUp} initial="hidden" animate="visible" custom={5}>
+            <div className="an-card-hd">
+              <div className="an-card-title">Recent reviews</div>
+              <button className="btn bg bsm" onClick={() => navigate('/dashboard/reviews')}>
+                View all →
+              </button>
+            </div>
+            <table className="summary-table">
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Rating</th>
+                  <th>Review</th>
+                  <th>Date</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </motion.div>
+              </thead>
+              <tbody>
+                {R.recent.map(r => (
+                  <tr key={r._id}>
+                    <td className="td-name">{r.customerName}</td>
+                    <td><Stars rating={r.rating} /></td>
+                    <td style={{ color: 'var(--ink2)', fontSize: 13, maxWidth: 260 }}>
+                      {r.comment.length > 60 ? r.comment.slice(0, 60) + '…' : r.comment}
+                    </td>
+                    <td style={{ color: 'var(--ink3)', fontSize: 12, whiteSpace: 'nowrap' }}>
+                      {new Date(r.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </motion.div>
+        )}
+
+        {/* ── EMPTY STATE (fresh vendor with no data yet) ── */}
+        {P.total === 0 && R.total === 0 && (
+          <motion.div className="an-card" style={{ textAlign: 'center', padding: '60px 24px' }} variants={fadeUp} initial="hidden" animate="visible" custom={4}>
+            <div style={{ fontSize: 48, marginBottom: 14 }}>📊</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--ink)', marginBottom: 8 }}>No data yet</div>
+            <div style={{ fontSize: 14, color: 'var(--ink3)', marginBottom: 24, lineHeight: 1.6 }}>
+              Add products and get customer reviews to see your analytics here.
+            </div>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+              <button className="btn bp bsm" onClick={() => navigate('/dashboard/products')}>+ Add products</button>
+              <button className="btn bg bsm" onClick={() => navigate('/dashboard/shop')}>Complete your profile</button>
+            </div>
+          </motion.div>
+        )}
 
       </main>
     </div>

@@ -4,24 +4,34 @@ import { motion } from 'framer-motion'
 import './Categories.css'
 
 const CATS = [
-  { emoji: '🍱', label: 'Food',        count: '48 vendors', cls: 'cf',  cat: 'Food & Beverages'   },
-  { emoji: '🛒', label: 'Grocery',     count: '35 vendors', cls: 'cg',  cat: 'Grocery'             },
-  { emoji: '✂️', label: 'Tailoring',   count: '22 vendors', cls: 'ct',  cat: 'Tailoring'           },
-  { emoji: '💇', label: 'Beauty',      count: '31 vendors', cls: 'cb',  cat: 'Beauty & Wellness'   },
-  { emoji: '🔌', label: 'Electronics', count: '18 vendors', cls: 'ce',  cat: 'Electronics Repair'  },
-  { emoji: '🔨', label: 'Home Repair', count: '27 vendors', cls: 'ch',  cat: 'Home Repair'         },
-  { emoji: '⚡', label: 'Electrician', count: '15 vendors', cls: 'cel', cat: 'Electrician'         },
-  { emoji: '🥐', label: 'Bakery',      count: '20 vendors', cls: 'ck',  cat: 'Bakery'              },
-  { emoji: '🏪', label: 'Local',       count: '42 vendors', cls: 'cl',  cat: 'Local Services'      },
+  { emoji: '🍱', label: 'Food',        cls: 'cf',  cat: 'Food & Beverages' },
+  { emoji: '🛒', label: 'Grocery',     cls: 'cg',  cat: 'Grocery' },
+  { emoji: '✂️', label: 'Tailoring',   cls: 'ct',  cat: 'Tailoring' },
+  { emoji: '💇', label: 'Beauty',      cls: 'cb',  cat: 'Beauty & Wellness' },
+  { emoji: '🔌', label: 'Electronics', cls: 'ce',  cat: 'Electronics Repair' },
+  { emoji: '🔨', label: 'Home Repair', cls: 'ch',  cat: 'Home Repair' },
+  { emoji: '⚡', label: 'Electrician', cls: 'cel', cat: 'Electrician' },
+  { emoji: '🥐', label: 'Bakery',      cls: 'ck',  cat: 'Bakery' },
+  { emoji: '🏪', label: 'Local',       cls: 'cl',  cat: 'Local Services' },
 ]
 
 const containerVariants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.07 } }
+  visible: {
+    transition: { staggerChildren: 0.07 }
+  }
 }
+
 const tileVariants = {
-  hidden:  { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } }
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.45,
+      ease: [0.22, 1, 0.36, 1]
+    }
+  }
 }
 
 export default function Categories() {
@@ -34,13 +44,18 @@ export default function Categories() {
   return (
     <section className="categories-sec sec">
       <div className="wrap">
+
         {/* ── header row ── */}
         <div className="sec-row">
           <div>
             <div className="sec-ey">Browse by category</div>
             <div className="sec-h">Everything local, one place</div>
           </div>
-          <button className="btn bg" onClick={() => navigate('/categories')}>
+
+          <button
+            className="btn bg"
+            onClick={() => navigate('/categories')}
+          >
             All categories →
           </button>
         </div>
@@ -61,11 +76,14 @@ export default function Categories() {
               onClick={() => handleClick(c.cat)}
             >
               <span className="ct-em">{c.emoji}</span>
-              <div className="ct-n">{c.label}</div>
-              <div className="ct-c">{c.count}</div>
+
+              <div className="ct-n">
+                {c.label}
+              </div>
             </motion.div>
           ))}
         </motion.div>
+
       </div>
     </section>
   )

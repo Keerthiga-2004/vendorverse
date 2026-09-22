@@ -1,5 +1,10 @@
-node_modules/
+# Env files with real values
 .env
-dist/
-build/
-.vscode/
+.env.local
+.env.*.local
+client/.env.production
+node_modules/
+server/checkDatabase.js
+server/checkNatchiyarPassword.js
+server/resetNatchiyarPassword.js
+server/resetRamPassword.js

@@ -1,120 +1,47 @@
-// src/components/sections/FeaturedVendors.jsx
+// src/sections/FeaturedVendors.jsx
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import VendorCard from "../components/ui/Vendorcard"
+import VendorCard from '../components/ui/VendorCard'
+import api from '../services/api'
 import './FeaturedVendors.css'
-
-/* Demo vendors used for the Featured Vendors section */
-const VENDORS = [
-  {
-    _id: 'v1',
-    shopName: "Ravi's Kitchen",
-    category: 'Food & Beverages',
-    emoji: '🍱',
-    cardClass: 'vf',
-    city: 'Coimbatore',
-    openingHours: '7AM–10PM',
-    rating: null,
-    reviewCount: null,
-    isVerified: false,
-    isOpen: true,
-  },
-  {
-    _id: 'v2',
-    shopName: 'Stitch Perfect',
-    category: 'Tailoring',
-    emoji: '✂️',
-    cardClass: 'vt',
-    city: 'Coimbatore',
-    openingHours: '9AM–7PM',
-    rating: null,
-    reviewCount: null,
-    isVerified: false,
-    isOpen: true,
-  },
-  {
-    _id: 'v3',
-    shopName: 'GlowUp Studio',
-    category: 'Beauty & Wellness',
-    emoji: '💇',
-    cardClass: 'vb',
-    city: 'Erode',
-    openingHours: '10AM–8PM',
-    rating: null,
-    reviewCount: null,
-    isVerified: false,
-    isOpen: false,
-  },
-  {
-    _id: 'v4',
-    shopName: 'FixIt Electronics',
-    category: 'Electronics Repair',
-    emoji: '🔌',
-    cardClass: 've',
-    city: 'Chennai',
-    openingHours: '9AM–8PM',
-    rating: null,
-    reviewCount: null,
-    isVerified: false,
-    isOpen: true,
-  },
-  {
-    _id: 'v5',
-    shopName: "Ammi's Bakery",
-    category: 'Bakery',
-    emoji: '🥐',
-    cardClass: 'vk',
-    city: 'Coimbatore',
-    openingHours: '6AM–9PM',
-    rating: null,
-    reviewCount: null,
-    isVerified: false,
-    isOpen: true,
-  },
-  {
-    _id: 'v6',
-    shopName: 'PowerLine Electricals',
-    category: 'Electrician',
-    emoji: '⚡',
-    cardClass: 'vel',
-    city: 'Erode',
-    openingHours: '8AM–6PM',
-    rating: null,
-    reviewCount: null,
-    isVerified: false,
-    isOpen: true,
-  },
-]
 
 const gridVariants = {
   hidden: {},
-
-  visible: {
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
+  visible: { transition: { staggerChildren: 0.1 } },
 }
 
 const cardVariants = {
-  hidden: {
-    opacity: 0,
-    y: 32,
-  },
-
-  visible: {
-    opacity: 1,
-    y: 0,
-
-    transition: {
-      duration: 0.5,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  },
+  hidden:   { opacity: 0, y: 32 },
+  visible:  { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
 }
 
 export default function FeaturedVendors() {
   const navigate = useNavigate()
+
+  // ✅ CHANGED: real vendors from API instead of hardcoded VENDORS array
+  const [vendors,  setVendors]  = useState([])
+  const [loading,  setLoading]  = useState(true)
+
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        const { data } = await api.get('/users/vendors?sort=rating')
+        // Show up to 6 highest-rated vendors
+        setVendors(data.slice(0, 6))
+      } catch {
+        setVendors([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchVendors()
+  }, [])
+
+  // If still loading or no vendors exist — don't render the section at all
+  // This avoids an empty section heading with nothing under it
+  if (loading) return null
+  if (vendors.length === 0) return null
 
   return (
     <section className="featured-sec">
@@ -122,47 +49,28 @@ export default function FeaturedVendors() {
 
         {/* header row */}
         <div className="sec-row">
-
           <div>
-            <div className="sec-ey">
-              Featured vendors
-            </div>
-
-            <div className="sec-h">
-              Explore local vendors
-            </div>
+            <div className="sec-ey">Featured vendors</div>
+            <div className="sec-h">Explore local vendors</div>
           </div>
-
-          <button
-            className="btn bg"
-            onClick={() => navigate('/explore')}
-          >
+          <button className="btn bg" onClick={() => navigate('/explore')}>
             View all →
           </button>
-
         </div>
 
-        {/* vendor grid */}
+        {/* vendor grid — real MongoDB data */}
         <motion.div
           className="vgrid"
           variants={gridVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{
-            once: true,
-            amount: 0.1,
-          }}
+          viewport={{ once: true, amount: 0.1 }}
         >
-
-          {VENDORS.map((v) => (
-            <motion.div
-              key={v._id}
-              variants={cardVariants}
-            >
+          {vendors.map(v => (
+            <motion.div key={v._id} variants={cardVariants}>
               <VendorCard vendor={v} />
             </motion.div>
           ))}
-
         </motion.div>
 
       </div>

@@ -1,9 +1,9 @@
-// src/pages/Auth/Login.jsx
+// src/pages/Login.jsx
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from '../context/AuthContext'
 import './Login.css'
 
 const fadeUp = {
@@ -15,8 +15,8 @@ export default function Login() {
   const navigate = useNavigate()
   const { login, loading } = useAuth()
 
-  const [form, setForm] = useState({ email: '', password: '' })
-  const [errors, setErrors] = useState({})
+  const [form, setForm]       = useState({ email: '', password: '' })
+  const [errors, setErrors]   = useState({})
   const [submitting, setSubmitting] = useState(false)
 
   const handleChange = (e) => {
@@ -83,6 +83,7 @@ export default function Login() {
             </span>
           </Link>
 
+          {/* ✅ REWORDED: removed overclaims about GPS and "actual neighbours" */}
           <div className="auth-q">
             Welcome back to your <em>neighbourhood</em> marketplace
           </div>
@@ -90,15 +91,24 @@ export default function Login() {
           <div className="auth-pts">
             <div className="auth-pt">
               <div className="auth-pt-ic">📍</div>
-              <div className="auth-pt-t"><strong>Hyperlocal discovery</strong>Find vendors within walking distance.</div>
+              <div className="auth-pt-t">
+                <strong>Local discovery</strong>
+                Find vendors by category and location in your area.
+              </div>
             </div>
             <div className="auth-pt">
               <div className="auth-pt-ic">⭐</div>
-              <div className="auth-pt-t"><strong>Real reviews</strong>Honest ratings from your actual neighbours.</div>
+              <div className="auth-pt-t">
+                <strong>Customer reviews</strong>
+                Read and share feedback about local businesses.
+              </div>
             </div>
             <div className="auth-pt">
               <div className="auth-pt-ic">🏪</div>
-              <div className="auth-pt-t"><strong>Vendor dashboard</strong>Powerful tools to manage your business.</div>
+              <div className="auth-pt-t">
+                <strong>Vendor dashboard</strong>
+                Manage your shop, products and customer messages.
+              </div>
             </div>
           </div>
         </div>
@@ -156,14 +166,10 @@ export default function Login() {
             </button>
           </form>
 
+          {/* ✅ REMOVED: demo-box with user@demo.com / vendor@demo.com / demo123 */}
+
           <div className="auth-sw">
             No account? <Link to="/signup">Create one free →</Link>
-          </div>
-
-          <div className="demo-box">
-            <strong>Demo accounts</strong><br />
-            User: <strong>user@demo.com</strong> / demo123<br />
-            Vendor: <strong>vendor@demo.com</strong> / demo123
           </div>
         </motion.div>
       </div>

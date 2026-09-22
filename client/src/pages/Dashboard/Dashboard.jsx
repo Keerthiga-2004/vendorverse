@@ -1,66 +1,15 @@
 // src/pages/Dashboard/Dashboard.jsx
 
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
+import api from '../../services/api'
 import './Dashboard.css'
 
-// ─── MOCK DATA ─────────────────────────────────────────────
-
-const MOCK_VENDOR = {
-  rating: 4.8,
-  reviewCount: 23,
-  isOpen: true,
-}
-
-const MOCK_PRODUCTS = [
-  {
-    _id: 'dp1',
-    name: 'Masala Dosa',
-    price: 60,
-    category: 'Food',
-    available: true,
-  },
-  {
-    _id: 'dp2',
-    name: 'Filter Coffee',
-    price: 25,
-    category: 'Food',
-    available: true,
-  },
-  {
-    _id: 'dp3',
-    name: 'Thali Meals',
-    price: 120,
-    category: 'Food',
-    available: true,
-  },
-  {
-    _id: 'dp4',
-    name: 'Cold Coffee',
-    price: 45,
-    category: 'Beverage',
-    available: false,
-  },
-  {
-    _id: 'dp5',
-    name: 'Veg Puff',
-    price: 30,
-    category: 'Snacks',
-    available: true,
-  },
-]
-
-const MOCK_RECENT_REVIEWS = []
-
 // ─── ANIMATION ─────────────────────────────────────────────
-
 const fadeUp = {
-  hidden: {
-    opacity: 0,
-    y: 18,
-  },
-
+  hidden: { opacity: 0, y: 18 },
   visible: (i = 0) => ({
     opacity: 1,
     y: 0,
@@ -72,13 +21,8 @@ const fadeUp = {
   }),
 }
 
-// ─── ICON SYSTEM ───────────────────────────────────────────
-
-function Icon({
-  type,
-  size = 20,
-  strokeWidth = 1.8,
-}) {
+// ─── ICON SYSTEM ──────────────────────────────────────────
+function Icon({ type, size = 20, strokeWidth = 1.8 }) {
   const common = {
     width: size,
     height: size,
@@ -140,23 +84,12 @@ function Icon({
       </>
     ),
 
-    box: (
-      <>
-        <path d="m21 8-9-5-9 5 9 5 9-5Z" />
-        <path d="M3 8v8l9 5 9-5V8" />
-        <path d="M12 13v8" />
-        <path d="m7.5 5.5 9 5" />
-      </>
-    ),
-
     star: (
       <path d="m12 3 2.75 5.58 6.16.9-4.46 4.35 1.05 6.14L12 17.07l-5.5 2.9 1.05-6.14-4.46-4.35 6.16-.9L12 3Z" />
     ),
 
     check: (
-      <>
-        <path d="M20 6 9 17l-5-5" />
-      </>
+      <path d="M20 6 9 17l-5-5" />
     ),
 
     food: (
@@ -178,13 +111,6 @@ function Icon({
       </>
     ),
 
-    snack: (
-      <>
-        <path d="M5 5h14v14H5z" />
-        <path d="M8 9h8M8 13h5M8 17h3" />
-      </>
-    ),
-
     defaultProduct: (
       <>
         <path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z" />
@@ -197,8 +123,7 @@ function Icon({
   return <svg {...common}>{paths[type] || paths.defaultProduct}</svg>
 }
 
-// ─── SIDEBAR LOGO ───────────────────────────────────────────
-
+// ─── SIDEBAR LOGO ──────────────────────────────────────────
 function SidebarLogo() {
   return (
     <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
@@ -243,27 +168,20 @@ function SidebarLogo() {
         strokeLinejoin="round"
       />
 
-      <circle
-        cx="20"
-        cy="20"
-        r="2.8"
-        fill="url(#sb-lg1)"
-      />
+      <circle cx="20" cy="20" r="2.8" fill="url(#sb-lg1)" />
     </svg>
   )
 }
 
-// ─── PRODUCT ICON ───────────────────────────────────────────
-
-function ProductIcon({ category }) {
-  const normalized = String(category || '').toLowerCase()
+// ─── PRODUCT ICON ──────────────────────────────────────────
+function ProductIcon({ product }) {
+  const normalized = String(product?.category || '').toLowerCase()
 
   let type = 'defaultProduct'
 
   if (
     normalized.includes('food') ||
-    normalized.includes('bakery') ||
-    normalized.includes('snack')
+    normalized.includes('bakery')
   ) {
     type = 'food'
   } else if (
@@ -271,10 +189,6 @@ function ProductIcon({ category }) {
     normalized.includes('drink')
   ) {
     type = 'beverage'
-  } else if (
-    normalized.includes('snack')
-  ) {
-    type = 'snack'
   }
 
   return (
@@ -292,29 +206,160 @@ function ProductIcon({ category }) {
         color: '#7C3AED',
         border: '1px solid rgba(124,58,237,.10)',
         boxShadow: '0 4px 12px rgba(124,58,237,.08)',
+        overflow: 'hidden',
+        flexShrink: 0,
       }}
     >
-      <Icon type={type} size={18} />
+      {product?.image ? (
+        <img
+          src={product.image}
+          alt={product.name}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+      ) : (
+        <Icon type={type} size={18} />
+      )}
+    </span>
+  )
+}
+
+// ─── STAR DISPLAY ──────────────────────────────────────────
+function StarRating({ rating = 0 }) {
+  const rounded = Math.round(Number(rating) || 0)
+
+  return (
+    <span
+      style={{
+        color: '#F59E0B',
+        fontSize: 13,
+        letterSpacing: 1,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {'★'.repeat(rounded)}
+      {'☆'.repeat(5 - rounded)}
     </span>
   )
 }
 
 // ─── MAIN COMPONENT ────────────────────────────────────────
-
 export default function Dashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
-  const firstName =
-    user?.name?.split(' ')[0] || 'Vendor'
+  const [profile, setProfile] = useState(null)
+  const [products, setProducts] = useState([])
+  const [reviews, setReviews] = useState([])
 
-  const recentProducts = MOCK_PRODUCTS.slice(0, 5)
+  const [loadingProfile, setLoadingProfile] = useState(true)
+  const [loadingProducts, setLoadingProducts] = useState(true)
+  const [loadingReviews, setLoadingReviews] = useState(true)
+
+  const firstName = user?.name?.split(' ')[0] || 'Vendor'
+
+  // ─── FETCH REAL VENDOR PROFILE ─────────────────────────
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const { data } = await api.get('/users/profile')
+        setProfile(data)
+      } catch (err) {
+        console.error(
+          'Dashboard: failed to load profile',
+          err.message
+        )
+      } finally {
+        setLoadingProfile(false)
+      }
+    }
+
+    fetchProfile()
+  }, [])
+
+  // ─── FETCH REAL PRODUCTS ───────────────────────────────
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const { data } = await api.get('/products/vendor')
+
+        setProducts(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.error(
+          'Dashboard: failed to load products',
+          err.message
+        )
+        setProducts([])
+      } finally {
+        setLoadingProducts(false)
+      }
+    }
+
+    fetchProducts()
+  }, [])
+
+  // ─── FETCH REAL REVIEWS ────────────────────────────────
+  useEffect(() => {
+    if (!user?._id) {
+      setLoadingReviews(false)
+      return
+    }
+
+    const fetchReviews = async () => {
+      try {
+        const { data } = await api.get(
+          `/reviews/${user._id}`
+        )
+
+        setReviews(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.error(
+          'Dashboard: failed to load reviews',
+          err.message
+        )
+        setReviews([])
+      } finally {
+        setLoadingReviews(false)
+      }
+    }
+
+    fetchReviews()
+  }, [user?._id])
+
+  // ─── RECENT PRODUCTS ───────────────────────────────────
+  const recentProducts = products.slice(0, 5)
+
+  // ─── RECENT REVIEWS ────────────────────────────────────
+  const recentReviews = reviews.slice(0, 3)
+
+  // ─── KPI VALUES ────────────────────────────────────────
+  const kpiProducts =
+    loadingProducts ? '…' : products.length
+
+  const kpiRating =
+    loadingProfile
+      ? '…'
+      : profile?.rating > 0
+        ? Number(profile.rating).toFixed(1)
+        : '—'
+
+  const kpiReviews =
+    loadingProfile
+      ? '…'
+      : (profile?.reviewCount ?? reviews.length)
+
+  const kpiIsOpen =
+    loadingProfile
+      ? null
+      : (profile?.isOpen ?? false)
 
   return (
     <div className="dash-wrap">
 
-      {/* ═══════════════════ SIDEBAR ═══════════════════ */}
-
+      {/* ═══════════════ SIDEBAR ═══════════════ */}
       <aside className="sb">
 
         <div className="sb-logo">
@@ -331,6 +376,7 @@ export default function Dashboard() {
         </div>
 
         <div className="sb-sec">
+
           <span className="sb-lbl">
             Main
           </span>
@@ -344,9 +390,7 @@ export default function Dashboard() {
 
           <button
             className="sb-a"
-            onClick={() =>
-              navigate('/dashboard/products')
-            }
+            onClick={() => navigate('/dashboard/products')}
           >
             <span className="sb-ic">
               <Icon type="products" size={18} />
@@ -356,9 +400,7 @@ export default function Dashboard() {
 
           <button
             className="sb-a"
-            onClick={() =>
-              navigate('/dashboard/shop')
-            }
+            onClick={() => navigate('/dashboard/shop')}
           >
             <span className="sb-ic">
               <Icon type="shop" size={18} />
@@ -368,21 +410,31 @@ export default function Dashboard() {
 
           <button
             className="sb-a"
-            onClick={() =>
-              navigate('/dashboard/reviews')
-            }
+            onClick={() => navigate('/dashboard/reviews')}
           >
             <span className="sb-ic">
               <Icon type="reviews" size={18} />
             </span>
             Reviews
           </button>
+
+          <button
+            className="sb-a"
+            onClick={() => navigate('/dashboard/analytics')}
+          >
+            <span className="sb-ic">
+              📈
+            </span>
+            Analytics
+          </button>
+
         </div>
 
         <div
           className="sb-sec"
           style={{ marginTop: 8 }}
         >
+
           <span className="sb-lbl">
             Other
           </span>
@@ -406,15 +458,15 @@ export default function Dashboard() {
             </span>
             Logout
           </button>
+
         </div>
+
       </aside>
 
-      {/* ═══════════════════ MAIN ═══════════════════ */}
-
+      {/* ═══════════════ MAIN ═══════════════ */}
       <main className="dmain">
 
-        {/* Header */}
-
+        {/* HEADER */}
         <motion.div
           className="dash-hd"
           variants={fadeUp}
@@ -428,23 +480,19 @@ export default function Dashboard() {
             </div>
 
             <div className="dash-sub">
-              Welcome back, {firstName}! Here's your
-              shop overview.
+              Welcome back, {firstName}! Here's your shop overview.
             </div>
           </div>
 
           <button
             className="btn bp bsm"
-            onClick={() =>
-              navigate('/dashboard/products')
-            }
+            onClick={() => navigate('/dashboard/products')}
           >
             + Add product
           </button>
         </motion.div>
 
-        {/* KPI CARDS */}
-
+        {/* ═══ KPI CARDS ═══ */}
         <motion.div
           className="kpis"
           variants={fadeUp}
@@ -453,9 +501,9 @@ export default function Dashboard() {
           custom={1}
         >
 
-          {/* Products */}
-
+          {/* PRODUCTS */}
           <div className="kpi">
+
             <div
               className="kpi-blob"
               style={{ background: 'var(--v)' }}
@@ -473,17 +521,18 @@ export default function Dashboard() {
             </div>
 
             <div className="kpi-n">
-              {MOCK_PRODUCTS.length}
+              {kpiProducts}
             </div>
 
             <div className="kpi-tr">
-              ↑ In your shop
+              In your shop
             </div>
+
           </div>
 
-          {/* Rating */}
-
+          {/* RATING */}
           <div className="kpi">
+
             <div
               className="kpi-blob"
               style={{ background: 'var(--amber)' }}
@@ -501,17 +550,18 @@ export default function Dashboard() {
             </div>
 
             <div className="kpi-n">
-              {MOCK_VENDOR.rating || '—'}
+              {kpiRating}
             </div>
 
             <div className="kpi-tr">
               Customer score
             </div>
+
           </div>
 
-          {/* Reviews */}
-
+          {/* REVIEWS */}
           <div className="kpi">
+
             <div
               className="kpi-blob"
               style={{ background: 'var(--green)' }}
@@ -529,17 +579,18 @@ export default function Dashboard() {
             </div>
 
             <div className="kpi-n">
-              {MOCK_VENDOR.reviewCount}
+              {kpiReviews}
             </div>
 
             <div className="kpi-tr">
               Total feedback
             </div>
+
           </div>
 
-          {/* Status */}
-
+          {/* STATUS */}
           <div className="kpi">
+
             <div
               className="kpi-blob"
               style={{ background: 'var(--teal)' }}
@@ -557,7 +608,12 @@ export default function Dashboard() {
             </div>
 
             <div className="kpi-n kpi-n-sm">
-              {MOCK_VENDOR.isOpen ? (
+
+              {kpiIsOpen === null ? (
+                <span style={{ color: 'var(--ink3)' }}>
+                  …
+                </span>
+              ) : kpiIsOpen ? (
                 <span style={{ color: 'var(--green)' }}>
                   Open
                 </span>
@@ -566,17 +622,37 @@ export default function Dashboard() {
                   Closed
                 </span>
               )}
+
             </div>
 
             <div className="kpi-tr">
-              Shop visibility
+
+              {kpiIsOpen !== null && (
+                <button
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--v)',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: 0,
+                  }}
+                  onClick={() =>
+                    navigate('/dashboard/shop')
+                  }
+                >
+                  Change in My Shop →
+                </button>
+              )}
+
             </div>
+
           </div>
 
         </motion.div>
 
-        {/* ═══════════════════ RECENT PRODUCTS ═══════════════════ */}
-
+        {/* ═══ RECENT PRODUCTS ═══ */}
         <motion.div
           className="dcard"
           variants={fadeUp}
@@ -584,7 +660,9 @@ export default function Dashboard() {
           animate="visible"
           custom={2}
         >
+
           <div className="dcard-hd">
+
             <div className="dcard-t">
               Recent products
             </div>
@@ -597,9 +675,90 @@ export default function Dashboard() {
             >
               Manage all →
             </button>
+
           </div>
 
-          {recentProducts.length > 0 ? (
+          {loadingProducts ? (
+
+            <div style={{ padding: '24px 0' }}>
+
+              {[1, 2, 3].map(i => (
+                <div
+                  key={i}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns:
+                      '2.5fr 1fr 1fr 1fr',
+                    gap: 12,
+                    padding: '14px 0',
+                    borderBottom:
+                      '1px solid var(--border)',
+                    alignItems: 'center',
+                  }}
+                >
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: 10,
+                      alignItems: 'center',
+                    }}
+                  >
+
+                    <div
+                      style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 10,
+                        background: '#EDE9FE',
+                      }}
+                    />
+
+                    <div
+                      style={{
+                        width: 100,
+                        height: 12,
+                        borderRadius: 6,
+                        background: '#EDE9FE',
+                      }}
+                    />
+
+                  </div>
+
+                  <div
+                    style={{
+                      width: 40,
+                      height: 12,
+                      borderRadius: 6,
+                      background: '#EDE9FE',
+                    }}
+                  />
+
+                  <div
+                    style={{
+                      width: 60,
+                      height: 12,
+                      borderRadius: 6,
+                      background: '#EDE9FE',
+                    }}
+                  />
+
+                  <div
+                    style={{
+                      width: 30,
+                      height: 12,
+                      borderRadius: 6,
+                      background: '#EDE9FE',
+                    }}
+                  />
+
+                </div>
+              ))}
+
+            </div>
+
+          ) : recentProducts.length > 0 ? (
+
             <div>
 
               <div className="pt-head">
@@ -607,10 +766,11 @@ export default function Dashboard() {
                 <div>Price</div>
                 <div>Category</div>
                 <div>Available</div>
-                <div></div>
+                <div />
               </div>
 
               {recentProducts.map((p) => (
+
                 <div
                   key={p._id}
                   className="pt-row"
@@ -618,11 +778,7 @@ export default function Dashboard() {
 
                   <div className="pt-n">
 
-                    {/* Professional product thumbnail */}
-
-                    <ProductIcon
-                      category={p.category}
-                    />
+                    <ProductIcon product={p} />
 
                     <div
                       style={{
@@ -632,6 +788,7 @@ export default function Dashboard() {
                         minWidth: 0,
                       }}
                     >
+
                       <span
                         style={{
                           fontWeight: 700,
@@ -644,11 +801,12 @@ export default function Dashboard() {
                       <span
                         style={{
                           fontSize: 11,
-                          color: 'var(--muted)',
+                          color: 'var(--ink3)',
                         }}
                       >
                         {p.category}
                       </span>
+
                     </div>
 
                   </div>
@@ -667,29 +825,28 @@ export default function Dashboard() {
                   </div>
 
                   <div>
+
                     <span
                       className={`badge ${
-                        p.available
-                          ? 'bg2'
-                          : 'bc2'
+                        p.available ? 'bg2' : 'bc2'
                       }`}
-                      style={{
-                        fontSize: 10,
-                      }}
+                      style={{ fontSize: 10 }}
                     >
-                      {p.available
-                        ? 'Yes'
-                        : 'No'}
+                      {p.available ? 'Yes' : 'No'}
                     </span>
+
                   </div>
 
                   <div />
 
                 </div>
+
               ))}
 
             </div>
+
           ) : (
+
             <div className="empty">
 
               <span
@@ -706,10 +863,7 @@ export default function Dashboard() {
                   color: '#7C3AED',
                 }}
               >
-                <Icon
-                  type="products"
-                  size={26}
-                />
+                <Icon type="products" size={26} />
               </span>
 
               <h3>
@@ -717,16 +871,16 @@ export default function Dashboard() {
               </h3>
 
               <p>
-                Start by adding a product
-                to your shop.
+                Start by adding a product to your shop.
               </p>
 
             </div>
+
           )}
+
         </motion.div>
 
-        {/* ═══════════════════ RECENT REVIEWS ═══════════════════ */}
-
+        {/* ═══ RECENT REVIEWS — REAL DATA ═══ */}
         <motion.div
           className="dcard"
           variants={fadeUp}
@@ -734,6 +888,7 @@ export default function Dashboard() {
           animate="visible"
           custom={3}
         >
+
           <div className="dcard-hd">
 
             <div className="dcard-t">
@@ -751,48 +906,146 @@ export default function Dashboard() {
 
           </div>
 
-          {MOCK_RECENT_REVIEWS.length > 0 ? (
-            MOCK_RECENT_REVIEWS.map((r) => (
-              <div
-                key={r._id}
-                className="rev-item"
-              >
-                <div className="rev-hd">
+          {loadingReviews ? (
 
+            <div
+              style={{
+                padding: '32px 0',
+                textAlign: 'center',
+                color: 'var(--ink3)',
+                fontSize: 13,
+              }}
+            >
+              Loading reviews…
+            </div>
+
+          ) : recentReviews.length > 0 ? (
+
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+
+              {recentReviews.map((review) => {
+
+                const customerName =
+                  review.customer?.name ||
+                  'Customer'
+
+                return (
                   <div
-                    className="rev-av"
+                    key={review._id}
                     style={{
-                      background:
-                        r.color || '#7C3AED',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 14,
+                      padding: '16px 0',
+                      borderBottom:
+                        '1px solid var(--border)',
                     }}
                   >
-                    {r.name[0]}
-                  </div>
 
-                  <div>
-                    <div className="rev-name">
-                      {r.name}
+                    <div
+                      style={{
+                        width: 38,
+                        height: 38,
+                        minWidth: 38,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background:
+                          'var(--vl)',
+                        color:
+                          'var(--v)',
+                        fontWeight: 800,
+                        fontSize: 14,
+                      }}
+                    >
+                      {customerName
+                        .charAt(0)
+                        .toUpperCase()}
                     </div>
 
-                    <div className="rev-dt">
-                      {new Date(
-                        r.date
-                      ).toLocaleDateString()}
+                    <div
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                      }}
+                    >
+
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent:
+                            'space-between',
+                          gap: 10,
+                          flexWrap: 'wrap',
+                        }}
+                      >
+
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            color: 'var(--ink)',
+                            fontSize: 13,
+                          }}
+                        >
+                          {customerName}
+                        </div>
+
+                        <StarRating
+                          rating={review.rating}
+                        />
+
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: 5,
+                          color: 'var(--ink2)',
+                          fontSize: 13,
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        {review.comment ||
+                          'No comment provided.'}
+                      </div>
+
+                      {review.createdAt && (
+                        <div
+                          style={{
+                            marginTop: 5,
+                            fontSize: 11,
+                            color: 'var(--ink3)',
+                          }}
+                        >
+                          {new Date(
+                            review.createdAt
+                          ).toLocaleDateString(
+                            'en-IN',
+                            {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                            }
+                          )}
+                        </div>
+                      )}
+
                     </div>
+
                   </div>
+                )
+              })}
 
-                  <div className="rev-str">
-                    {'★'.repeat(r.rating)}
-                  </div>
+            </div>
 
-                </div>
-
-                <div className="rev-text">
-                  {r.comment}
-                </div>
-              </div>
-            ))
           ) : (
+
             <div className="empty">
 
               <span
@@ -820,11 +1073,21 @@ export default function Dashboard() {
               </h3>
 
               <p>
-                Customer reviews will
-                appear here.
+                Customer reviews will appear here once customers review your shop.
               </p>
 
+              <button
+                className="btn bg bsm"
+                style={{ marginTop: 10 }}
+                onClick={() =>
+                  navigate('/dashboard/reviews')
+                }
+              >
+                View reviews
+              </button>
+
             </div>
+
           )}
 
         </motion.div>

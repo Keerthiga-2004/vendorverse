@@ -1,18 +1,16 @@
 // src/pages/Dashboard/MyShop.jsx
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
+import api from '../../services/api'
+import toast from 'react-hot-toast'
 import './MyShop.css'
 
-// ─── ICON SYSTEM ───────────────────────────────────────────
+// ─── ICON SYSTEM ─────────────────────────────────────────────
 
-function Icon({
-  type,
-  size = 20,
-  strokeWidth = 1.8,
-}) {
+function Icon({ type, size = 20, strokeWidth = 1.8 }) {
   const common = {
     width: size,
     height: size,
@@ -44,13 +42,7 @@ function Icon({
 
     phone: (
       <>
-        <rect
-          x="7"
-          y="3"
-          width="10"
-          height="18"
-          rx="2"
-        />
+        <rect x="7" y="3" width="10" height="18" rx="2" />
         <path d="M10 6h4" />
         <path d="M11.5 18h1" />
       </>
@@ -58,13 +50,7 @@ function Icon({
 
     email: (
       <>
-        <rect
-          x="3"
-          y="5"
-          width="18"
-          height="14"
-          rx="2"
-        />
+        <rect x="3" y="5" width="18" height="14" rx="2" />
         <path d="m4 7 8 6 8-6" />
       </>
     ),
@@ -117,23 +103,14 @@ function Icon({
     ),
   }
 
-  return (
-    <svg {...common}>
-      {icons[type] || icons.store}
-    </svg>
-  )
+  return <svg {...common}>{icons[type] || icons.store}</svg>
 }
 
 // ─── SIDEBAR LOGO ──────────────────────────────────────────
 
 function SidebarLogo() {
   return (
-    <svg
-      width="28"
-      height="28"
-      viewBox="0 0 40 40"
-      fill="none"
-    >
+    <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
       <defs>
         <linearGradient
           id="myshop-lg1"
@@ -143,15 +120,8 @@ function SidebarLogo() {
           y2="40"
           gradientUnits="userSpaceOnUse"
         >
-          <stop
-            offset="0%"
-            stopColor="#7C3AED"
-          />
-
-          <stop
-            offset="100%"
-            stopColor="#F72585"
-          />
+          <stop offset="0%" stopColor="#7C3AED" />
+          <stop offset="100%" stopColor="#F72585" />
         </linearGradient>
 
         <linearGradient
@@ -162,15 +132,8 @@ function SidebarLogo() {
           y2="0"
           gradientUnits="userSpaceOnUse"
         >
-          <stop
-            offset="0%"
-            stopColor="#FFAB00"
-          />
-
-          <stop
-            offset="100%"
-            stopColor="#00C9B1"
-          />
+          <stop offset="0%" stopColor="#FFAB00" />
+          <stop offset="100%" stopColor="#00C9B1" />
         </linearGradient>
       </defs>
 
@@ -189,12 +152,7 @@ function SidebarLogo() {
         strokeLinejoin="round"
       />
 
-      <circle
-        cx="20"
-        cy="20"
-        r="2.8"
-        fill="url(#myshop-lg1)"
-      />
+      <circle cx="20" cy="20" r="2.8" fill="url(#myshop-lg1)" />
     </svg>
   )
 }
@@ -207,14 +165,9 @@ function Sidebar({ active }) {
 
   return (
     <aside className="sb">
-
       <div className="sb-logo">
-        <div
-          className="logo-link"
-          onClick={() => navigate('/')}
-        >
+        <div className="logo-link" onClick={() => navigate('/')}>
           <SidebarLogo />
-
           <span className="sb-logo-txt">
             Vendor<b>Verse</b>
           </span>
@@ -222,151 +175,84 @@ function Sidebar({ active }) {
       </div>
 
       <div className="sb-sec">
-        <span className="sb-lbl">
-          Main
-        </span>
+        <span className="sb-lbl">Main</span>
 
         <button
-          className={`sb-a${
-            active === 'overview'
-              ? ' on'
-              : ''
-          }`}
-          onClick={() =>
-            navigate('/dashboard')
-          }
+          className={`sb-a${active === 'overview' ? ' on' : ''}`}
+          onClick={() => navigate('/dashboard')}
         >
           <span className="sb-ic">
-            <Icon
-              type="dashboard"
-              size={18}
-            />
+            <Icon type="dashboard" size={18} />
           </span>
           Overview
         </button>
 
         <button
-          className={`sb-a${
-            active === 'products'
-              ? ' on'
-              : ''
-          }`}
-          onClick={() =>
-            navigate('/dashboard/products')
-          }
+          className={`sb-a${active === 'products' ? ' on' : ''}`}
+          onClick={() => navigate('/dashboard/products')}
         >
           <span className="sb-ic">
-            <Icon
-              type="products"
-              size={18}
-            />
+            <Icon type="products" size={18} />
           </span>
           Products
         </button>
 
         <button
-          className={`sb-a${
-            active === 'shop'
-              ? ' on'
-              : ''
-          }`}
-          onClick={() =>
-            navigate('/dashboard/shop')
-          }
+          className={`sb-a${active === 'shop' ? ' on' : ''}`}
+          onClick={() => navigate('/dashboard/shop')}
         >
           <span className="sb-ic">
-            <Icon
-              type="store"
-              size={18}
-            />
+            <Icon type="store" size={18} />
           </span>
           My Shop
         </button>
 
         <button
-          className={`sb-a${
-            active === 'reviews'
-              ? ' on'
-              : ''
-          }`}
-          onClick={() =>
-            navigate('/dashboard/reviews')
-          }
+          className={`sb-a${active === 'reviews' ? ' on' : ''}`}
+          onClick={() => navigate('/dashboard/reviews')}
         >
           <span className="sb-ic">
-            <Icon
-              type="reviews"
-              size={18}
-            />
+            <Icon type="reviews" size={18} />
           </span>
           Reviews
         </button>
-      </div>
-
-      <div
-        className="sb-sec"
-        style={{ marginTop: 8 }}
-      >
-        <span className="sb-lbl">
-          Other
-        </span>
 
         <button
-          className="sb-a"
-          onClick={() =>
-            navigate('/explore')
-          }
+          className={`sb-a${active === 'analytics' ? ' on' : ''}`}
+          onClick={() => navigate('/dashboard/analytics')}
         >
           <span className="sb-ic">
-            <Icon
-              type="search"
-              size={18}
-            />
+            <Icon type="analytics" size={18} />
+          </span>
+          Analytics
+        </button>
+      </div>
+
+      <div className="sb-sec" style={{ marginTop: 8 }}>
+        <span className="sb-lbl">Other</span>
+
+        <button className="sb-a" onClick={() => navigate('/explore')}>
+          <span className="sb-ic">
+            <Icon type="search" size={18} />
           </span>
           Explore
         </button>
 
-        <button
-          className="sb-a logout"
-          onClick={logout}
-        >
+        <button className="sb-a logout" onClick={logout}>
           <span className="sb-ic">
-            <Icon
-              type="logout"
-              size={18}
-            />
+            <Icon type="logout" size={18} />
           </span>
           Logout
         </button>
       </div>
-
     </aside>
   )
 }
 
-// ─── MOCK SHOP ──────────────────────────────────────────────
-
-const INIT_SHOP = {
-  shopName: 'sai cafe',
-  ownerName: 'Sai Kumar',
-  category: 'Food & Beverages',
-  address: 'church street 123',
-  city: 'Chennai',
-  phone: '1234567890',
-  email: 'kiki1234@gmail.com',
-  openingHours: '8am–9pm',
-  description:
-    'A welcoming local cafe serving fresh food and beverages for the neighbourhood.',
-  isOpen: true,
-}
-
-// ─── ANIMATION ──────────────────────────────────────────────
+// ─── ANIMATION ─────────────────────────────────────────────
 
 const fadeUp = {
-  hidden: {
-    opacity: 0,
-    y: 18,
-  },
+  hidden: { opacity: 0, y: 18 },
 
   visible: (i = 0) => ({
     opacity: 1,
@@ -382,20 +268,48 @@ const fadeUp = {
 // ─── MAIN ──────────────────────────────────────────────────
 
 export default function MyShop() {
-  const [shop, setShop] =
-    useState(INIT_SHOP)
+  const { user, token } = useAuth()
 
-  const [showModal, setShowModal] =
-    useState(false)
+  const [shop, setShop] = useState(null)
+  const [showModal, setShowModal] = useState(false)
+  const [form, setForm] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
 
-  const [form, setForm] =
-    useState(INIT_SHOP)
+  // ─── FETCH REAL VENDOR PROFILE ────────────────────────────
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!token) return
+
+      try {
+        setLoading(true)
+        setError(null)
+
+        const { data } = await api.get('/users/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        setShop(data)
+      } catch (err) {
+        console.error('Fetch shop profile error:', err)
+        console.error('Status:', err.response?.status)
+        console.error('Response:', err.response?.data)
+
+        setError('Failed to load shop profile. Please try again.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProfile()
+  }, [token])
 
   const openEdit = () => {
-    setForm({
-      ...shop,
-    })
-
+    setForm({ ...shop })
     setShowModal(true)
   }
 
@@ -403,51 +317,169 @@ export default function MyShop() {
     setShowModal(false)
   }
 
-  const handleSave = () => {
-    setShop({
-      ...form,
-    })
+  // ─── SAVE PROFILE ─────────────────────────────────────────
 
-    closeEdit()
+  const handleSave = async () => {
+    setSaving(true)
+
+    try {
+      const { data } = await api.put('/users/profile', {
+        shopName: form.shopName,
+        category: form.category,
+        description: form.description,
+        address: form.address,
+        city: form.city,
+        phone: form.phone,
+        openingHours: form.openingHours,
+        isOpen: form.isOpen,
+
+        // ✅ TASK 11: save coordinates
+        lat:
+          form.lat === '' || form.lat == null
+            ? null
+            : Number(form.lat),
+
+        lng:
+          form.lng === '' || form.lng == null
+            ? null
+            : Number(form.lng),
+      })
+
+      setShop(data.vendor)
+      closeEdit()
+
+      toast.success('Shop profile updated! ✅')
+    } catch (err) {
+      console.error('Save shop profile error:', err)
+
+      toast.error(
+        err.response?.data?.message ||
+        'Failed to save. Please try again.'
+      )
+    } finally {
+      setSaving(false)
+    }
   }
+
+  // ─── LOADING STATE ────────────────────────────────────────
+
+  if (loading) {
+    return (
+      <div className="shop-wrap">
+        <Sidebar active="shop" />
+
+        <main className="shop-main">
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: 320,
+              color: 'var(--ink3)',
+              flexDirection: 'column',
+              gap: 16,
+            }}
+          >
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                border: '3px solid var(--border)',
+                borderTopColor: 'var(--v)',
+                borderRadius: '50%',
+                animation: 'spin .7s linear infinite',
+              }}
+            />
+
+            <span style={{ fontSize: 14 }}>
+              Loading shop profile…
+            </span>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  // ─── ERROR STATE ──────────────────────────────────────────
+
+  if (error) {
+    return (
+      <div className="shop-wrap">
+        <Sidebar active="shop" />
+
+        <main className="shop-main">
+          <div
+            style={{
+              textAlign: 'center',
+              padding: '80px 20px',
+            }}
+          >
+            <div style={{ fontSize: 40, marginBottom: 12 }}>
+              ⚠️
+            </div>
+
+            <div
+              style={{
+                fontSize: 16,
+                fontWeight: 700,
+                color: 'var(--ink)',
+                marginBottom: 8,
+              }}
+            >
+              {error}
+            </div>
+
+            <button
+              className="btn bp bsm"
+              onClick={() => window.location.reload()}
+            >
+              Try again
+            </button>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  // ─── INFO ROWS ────────────────────────────────────────────
 
   const INFO = [
     {
       label: 'Owner Name',
-      value: shop.ownerName,
+      value: shop.name,
       icon: 'user',
     },
-
     {
       label: 'Category',
       value: shop.category,
       icon: 'category',
     },
-
     {
       label: 'Phone',
       value: shop.phone,
       icon: 'phone',
     },
-
     {
       label: 'Email',
       value: shop.email,
       icon: 'email',
     },
-
     {
       label: 'Address',
-      value: `${shop.address}, ${shop.city}`,
+      value:
+        [shop.address, shop.city]
+          .filter(Boolean)
+          .join(', ') || 'Not set',
       icon: 'location',
     },
-
     {
       label: 'Opening Hours',
       value: shop.openingHours,
       icon: 'clock',
     },
   ]
+
+  // ─── RENDER ───────────────────────────────────────────────
 
   return (
     <div className="shop-wrap">
@@ -457,7 +489,6 @@ export default function MyShop() {
       <main className="shop-main">
 
         {/* HEADER */}
-
         <motion.div
           className="shop-hd"
           variants={fadeUp}
@@ -466,10 +497,7 @@ export default function MyShop() {
           custom={0}
         >
           <div>
-            <div className="shop-title">
-              My Shop
-            </div>
-
+            <div className="shop-title">My Shop</div>
             <div className="shop-sub">
               Manage your vendor profile
             </div>
@@ -498,7 +526,6 @@ export default function MyShop() {
         </motion.div>
 
         {/* PROFILE CARD */}
-
         <motion.div
           className="shop-profile-card"
           variants={fadeUp}
@@ -507,8 +534,7 @@ export default function MyShop() {
           custom={1}
         >
 
-          {/* PROFESSIONAL COVER */}
-
+          {/* COVER */}
           <div
             className="shop-cover"
             style={{
@@ -518,17 +544,13 @@ export default function MyShop() {
               overflow: 'hidden',
             }}
           >
-
-            {/* decorative shapes */}
-
             <div
               style={{
                 position: 'absolute',
                 width: 230,
                 height: 230,
                 borderRadius: '50%',
-                background:
-                  'rgba(124,58,237,.08)',
+                background: 'rgba(124,58,237,.08)',
                 top: -100,
                 right: 80,
               }}
@@ -540,14 +562,11 @@ export default function MyShop() {
                 width: 170,
                 height: 170,
                 borderRadius: '50%',
-                background:
-                  'rgba(247,37,133,.07)',
+                background: 'rgba(247,37,133,.07)',
                 bottom: -90,
                 left: 90,
               }}
             />
-
-            {/* storefront illustration */}
 
             <div
               style={{
@@ -556,10 +575,8 @@ export default function MyShop() {
                 width: 118,
                 height: 92,
                 borderRadius: 18,
-                background:
-                  'rgba(255,255,255,.82)',
-                border:
-                  '1px solid rgba(124,58,237,.10)',
+                background: 'rgba(255,255,255,.82)',
+                border: '1px solid rgba(124,58,237,.10)',
                 boxShadow:
                   '0 16px 40px rgba(76,29,149,.12)',
                 display: 'flex',
@@ -592,19 +609,17 @@ export default function MyShop() {
                     textTransform: 'uppercase',
                   }}
                 >
-                  Local Cafe
+                  {shop.category || 'Local Shop'}
                 </span>
               </div>
             </div>
 
             <div className="shop-cover-overlay" />
-
           </div>
 
           <div className="shop-profile-inner">
 
-            {/* SHOP LOGO + NAME */}
-
+            {/* LOGO ROW */}
             <div className="shop-logo-row">
 
               <div
@@ -618,8 +633,7 @@ export default function MyShop() {
                   justifyContent: 'center',
                   boxShadow:
                     '0 10px 24px rgba(124,58,237,.22)',
-                  border:
-                    '4px solid #fff',
+                  border: '4px solid #fff',
                 }}
               >
                 <Icon
@@ -630,27 +644,19 @@ export default function MyShop() {
               </div>
 
               <div className="shop-name-block">
-
                 <div className="name">
-                  {shop.shopName}
+                  {shop.shopName || shop.name}
                 </div>
 
                 <div className="cat">
-                  {shop.category}
+                  {shop.category || 'Not set'}
                 </div>
-
               </div>
 
-              <div
-                style={{
-                  marginLeft: 'auto',
-                }}
-              >
+              <div style={{ marginLeft: 'auto' }}>
                 <span
                   className={`shop-status ${
-                    shop.isOpen
-                      ? 'open'
-                      : 'closed'
+                    shop.isOpen ? 'open' : 'closed'
                   }`}
                 >
                   {shop.isOpen
@@ -658,25 +664,20 @@ export default function MyShop() {
                     : '● Closed'}
                 </span>
               </div>
-
             </div>
 
             {/* INFO GRID */}
-
             <div className="shop-info-grid">
-
               {INFO.map((item) => (
                 <div
                   key={item.label}
                   className="shop-info-item"
                 >
-
                   <div className="shop-info-lbl">
                     {item.label}
                   </div>
 
                   <div className="shop-info-val">
-
                     <span
                       style={{
                         width: 26,
@@ -698,21 +699,25 @@ export default function MyShop() {
                       />
                     </span>
 
-                    {item.value}
-
+                    {item.value || (
+                      <span
+                        style={{
+                          color: 'var(--ink4)',
+                          fontStyle: 'italic',
+                        }}
+                      >
+                        Not set
+                      </span>
+                    )}
                   </div>
-
                 </div>
               ))}
-
             </div>
 
           </div>
-
         </motion.div>
 
         {/* ABOUT */}
-
         <motion.div
           className="shop-desc-card"
           variants={fadeUp}
@@ -725,16 +730,23 @@ export default function MyShop() {
           </div>
 
           <div className="shop-desc-text">
-            {shop.description}
+            {shop.description || (
+              <span
+                style={{
+                  color: 'var(--ink3)',
+                  fontStyle: 'italic',
+                }}
+              >
+                No description added yet. Click "Edit profile" to add one.
+              </span>
+            )}
           </div>
         </motion.div>
 
       </main>
 
       {/* EDIT MODAL */}
-
       <AnimatePresence>
-
         {showModal && (
           <motion.div
             className="sm-overlay"
@@ -742,7 +754,6 @@ export default function MyShop() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-
             <motion.div
               className="sm-modal"
               initial={{
@@ -761,8 +772,8 @@ export default function MyShop() {
               }}
             >
 
+              {/* MODAL HEADER */}
               <div className="sm-hd">
-
                 <div className="sm-title">
                   Edit shop profile
                 </div>
@@ -771,14 +782,11 @@ export default function MyShop() {
                   className="sm-close"
                   onClick={closeEdit}
                 >
-                  <Icon
-                    type="close"
-                    size={17}
-                  />
+                  <Icon type="close" size={17} />
                 </button>
-
               </div>
 
+              {/* SHOP NAME + OWNER */}
               <div className="sm-2col">
 
                 <div className="sm-field">
@@ -788,12 +796,11 @@ export default function MyShop() {
 
                   <input
                     className="sm-input"
-                    value={form.shopName}
+                    value={form.shopName || ''}
                     onChange={(e) =>
                       setForm((f) => ({
                         ...f,
-                        shopName:
-                          e.target.value,
+                        shopName: e.target.value,
                       }))
                     }
                   />
@@ -806,21 +813,19 @@ export default function MyShop() {
 
                   <input
                     className="sm-input"
-                    value={form.ownerName}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        ownerName:
-                          e.target.value,
-                      }))
-                    }
+                    value={form.name || ''}
+                    disabled
+                    style={{
+                      opacity: 0.6,
+                      cursor: 'not-allowed',
+                    }}
                   />
                 </div>
 
               </div>
 
+              {/* CATEGORY */}
               <div className="sm-2col">
-
                 <div className="sm-field">
                   <label className="sm-label">
                     Category
@@ -828,15 +833,18 @@ export default function MyShop() {
 
                   <select
                     className="sm-input"
-                    value={form.category}
+                    value={form.category || ''}
                     onChange={(e) =>
                       setForm((f) => ({
                         ...f,
-                        category:
-                          e.target.value,
+                        category: e.target.value,
                       }))
                     }
                   >
+                    <option value="">
+                      Select category
+                    </option>
+
                     {[
                       'Food & Beverages',
                       'Grocery',
@@ -848,85 +856,75 @@ export default function MyShop() {
                       'Bakery',
                       'Local Services',
                     ].map((c) => (
-                      <option
-                        key={c}
-                      >
+                      <option key={c}>
                         {c}
                       </option>
                     ))}
                   </select>
                 </div>
-
               </div>
 
+              {/* ADDRESS */}
               <div className="sm-field">
-
                 <label className="sm-label">
                   Address
                 </label>
 
                 <input
                   className="sm-input"
-                  value={form.address}
+                  value={form.address || ''}
                   onChange={(e) =>
                     setForm((f) => ({
                       ...f,
-                      address:
-                        e.target.value,
+                      address: e.target.value,
                     }))
                   }
                 />
-
               </div>
 
+              {/* CITY + PHONE */}
               <div className="sm-2col">
 
                 <div className="sm-field">
-
                   <label className="sm-label">
                     City
                   </label>
 
                   <input
                     className="sm-input"
-                    value={form.city}
+                    value={form.city || ''}
                     onChange={(e) =>
                       setForm((f) => ({
                         ...f,
-                        city:
-                          e.target.value,
+                        city: e.target.value,
                       }))
                     }
                   />
-
                 </div>
 
                 <div className="sm-field">
-
                   <label className="sm-label">
                     Phone
                   </label>
 
                   <input
                     className="sm-input"
-                    value={form.phone}
+                    value={form.phone || ''}
                     onChange={(e) =>
                       setForm((f) => ({
                         ...f,
-                        phone:
-                          e.target.value,
+                        phone: e.target.value,
                       }))
                     }
                   />
-
                 </div>
 
               </div>
 
+              {/* EMAIL + OPENING HOURS */}
               <div className="sm-2col">
 
                 <div className="sm-field">
-
                   <label className="sm-label">
                     Email
                   </label>
@@ -934,44 +932,37 @@ export default function MyShop() {
                   <input
                     className="sm-input"
                     type="email"
-                    value={form.email}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        email:
-                          e.target.value,
-                      }))
-                    }
+                    value={form.email || ''}
+                    disabled
+                    style={{
+                      opacity: 0.6,
+                      cursor: 'not-allowed',
+                    }}
                   />
-
                 </div>
 
                 <div className="sm-field">
-
                   <label className="sm-label">
                     Opening hours
                   </label>
 
                   <input
                     className="sm-input"
-                    value={
-                      form.openingHours
-                    }
+                    value={form.openingHours || ''}
+                    placeholder="e.g. 9AM–9PM"
                     onChange={(e) =>
                       setForm((f) => ({
                         ...f,
-                        openingHours:
-                          e.target.value,
+                        openingHours: e.target.value,
                       }))
                     }
                   />
-
                 </div>
 
               </div>
 
+              {/* DESCRIPTION */}
               <div className="sm-field">
-
                 <label className="sm-label">
                   Description
                 </label>
@@ -979,20 +970,118 @@ export default function MyShop() {
                 <textarea
                   className="sm-input"
                   rows={4}
-                  value={
-                    form.description
-                  }
+                  value={form.description || ''}
                   onChange={(e) =>
                     setForm((f) => ({
                       ...f,
-                      description:
-                        e.target.value,
+                      description: e.target.value,
                     }))
                   }
                 />
-
               </div>
 
+              {/* LOCATION COORDINATES */}
+              <div className="sm-field">
+                <label className="sm-label">
+                  Location (for map)
+                </label>
+
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
+
+                  <input
+                    className="sm-input"
+                    type="number"
+                    step="any"
+                    placeholder="Latitude (e.g. 11.0168)"
+                    value={form.lat ?? ''}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        lat: e.target.value,
+                      }))
+                    }
+                    style={{ flex: 1 }}
+                  />
+
+                  <input
+                    className="sm-input"
+                    type="number"
+                    step="any"
+                    placeholder="Longitude (e.g. 76.9558)"
+                    value={form.lng ?? ''}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        lng: e.target.value,
+                      }))
+                    }
+                    style={{ flex: 1 }}
+                  />
+
+                </div>
+
+                <button
+                  type="button"
+                  className="btn bg bsm"
+                  style={{ fontSize: 12 }}
+                  onClick={() => {
+                    if (!navigator.geolocation) {
+                      alert(
+                        'Geolocation is not supported by your browser'
+                      )
+                      return
+                    }
+
+                    navigator.geolocation.getCurrentPosition(
+                      (pos) => {
+                        setForm((f) => ({
+                          ...f,
+                          lat: parseFloat(
+                            pos.coords.latitude.toFixed(6)
+                          ),
+                          lng: parseFloat(
+                            pos.coords.longitude.toFixed(6)
+                          ),
+                        }))
+                      },
+                      () => {
+                        alert(
+                          'Could not get your location. Please enter coordinates manually.'
+                        )
+                      }
+                    )
+                  }}
+                >
+                  📍 Use my current location
+                </button>
+
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: 'var(--ink3)',
+                    marginTop: 6,
+                  }}
+                >
+                  Used to show your shop on the map. Find your coordinates at{' '}
+
+                  <a
+                    href="https://www.latlong.net"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'var(--v)' }}
+                  >
+                    latlong.net
+                  </a>
+                </div>
+              </div>
+
+              {/* SHOP OPEN/CLOSED */}
               <div
                 className="sm-field"
                 style={{
@@ -1003,21 +1092,18 @@ export default function MyShop() {
               >
 
                 <label className="tog">
-
                   <input
                     type="checkbox"
-                    checked={form.isOpen}
+                    checked={form.isOpen ?? true}
                     onChange={(e) =>
                       setForm((f) => ({
                         ...f,
-                        isOpen:
-                          e.target.checked,
+                        isOpen: e.target.checked,
                       }))
                     }
                   />
 
                   <span className="tog-sl" />
-
                 </label>
 
                 <span
@@ -1032,11 +1118,13 @@ export default function MyShop() {
 
               </div>
 
+              {/* MODAL FOOTER — ONLY ONE SET OF BUTTONS */}
               <div className="sm-foot">
 
                 <button
                   className="btn bg bsm"
                   onClick={closeEdit}
+                  disabled={saving}
                 >
                   Cancel
                 </button>
@@ -1044,17 +1132,18 @@ export default function MyShop() {
                 <button
                   className="btn bp bsm"
                   onClick={handleSave}
+                  disabled={saving}
                 >
-                  Save changes
+                  {saving
+                    ? 'Saving…'
+                    : 'Save changes'}
                 </button>
 
               </div>
 
             </motion.div>
-
           </motion.div>
         )}
-
       </AnimatePresence>
 
     </div>
